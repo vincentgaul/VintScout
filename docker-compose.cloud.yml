@@ -1,0 +1,67 @@
+# Docker Compose for Cloud Deployment (PostgreSQL)
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: vintedscanner-db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-vintedscanner}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - POSTGRES_DB=${POSTGRES_DB:-vintedscanner}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vintedscanner}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  vintedscanner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vintedscanner-web
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      - DEPLOYMENT_MODE=cloud
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-vintedscanner}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-vintedscanner}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["https://yourdomain.com"]}
+
+      # Email notifications
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+
+      # Slack notifications (optional)
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
+
+      # Telegram notifications (optional)
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+
+      # Brand/Category settings
+      - BRAND_CACHE_TTL_DAYS=${BRAND_CACHE_TTL_DAYS:-30}
+      - SEED_POPULAR_BRANDS_ON_STARTUP=${SEED_POPULAR_BRANDS_ON_STARTUP:-true}
+
+      # Feature flags
+      - ENABLE_REGISTRATION=${ENABLE_REGISTRATION:-true}
+
+    restart: unless-stopped
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
