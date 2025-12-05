@@ -19,7 +19,7 @@ Performance consideration:
 - Consider TTL cleanup job (delete records older than 30 days)
 """
 
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Index, Text
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey, Index, Text, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -60,6 +60,7 @@ class ItemHistory(Base):
     # Tracking
     found_at = Column(DateTime, default=datetime.utcnow, nullable=False)  # When we first saw it
     notified_at = Column(DateTime, nullable=True)  # When we sent notification (null = not notified)
+    is_baseline = Column(Boolean, default=False, nullable=False)  # True if item was part of initial baseline
 
     # Relationships
     alert = relationship("Alert", back_populates="item_history")
@@ -92,7 +93,7 @@ class ItemHistory(Base):
             .first() is not None
 
     @classmethod
-    def record(cls, session, alert_id, item_data):
+    def record(cls, session, alert_id, item_data, is_baseline=False):
         """
         Record a new item in history.
 
@@ -100,21 +101,32 @@ class ItemHistory(Base):
             session: Database session
             alert_id: Alert UUID
             item_data: Dictionary with item information from Vinted API
+            is_baseline: True if item is part of initial baseline (won't show in UI)
 
         Returns:
             ItemHistory object (newly created)
         """
+        # Extract price from dict if needed (Vinted API returns price as dict)
+        price_value = item_data.get("price")
+        if isinstance(price_value, dict):
+            price = float(price_value.get("amount", 0))
+            currency = price_value.get("currency_code", "EUR")
+        else:
+            price = float(price_value) if price_value else 0.0
+            currency = item_data.get("currency", "EUR")
+
         history = cls(
             alert_id=alert_id,
-            item_id=item_data["id"],
+            item_id=str(item_data["id"]),
             title=item_data["title"],
-            price=item_data["price"],
-            currency=item_data.get("currency", "EUR"),
+            price=price,
+            currency=currency,
             url=item_data["url"],
             image_url=item_data.get("photo", {}).get("url"),
             brand_name=item_data.get("brand_title"),
             size=item_data.get("size_title"),
-            condition=item_data.get("status")
+            condition=item_data.get("status"),
+            is_baseline=is_baseline
         )
         session.add(history)
         return history

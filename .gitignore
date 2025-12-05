@@ -44,3 +44,8 @@ htmlcov/
 .coverage
 .pytest_cache/
 .history/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/

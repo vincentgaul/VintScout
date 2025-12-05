@@ -19,10 +19,13 @@ Users can only access/modify their own alerts.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+import logging
 
 from backend.api.dependencies import get_db, get_current_user
 from backend.schemas import AlertCreate, AlertUpdate, AlertResponse
 from backend.models import User, Alert
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
@@ -192,6 +195,17 @@ def update_alert(
 
     # Update only provided fields
     update_data = alert_data.model_dump(exclude_unset=True)
+
+    # Detect reactivation and reset baseline
+    if 'is_active' in update_data:
+        # Check if transitioning from inactive to active (reactivation)
+        if not alert.is_active and update_data['is_active']:
+            # Clear old history and reset last_checked_at for fresh baseline
+            from backend.models import ItemHistory
+            db.query(ItemHistory).filter(ItemHistory.alert_id == alert.id).delete()
+            alert.last_checked_at = None
+            logger.info(f"Alert {alert.id} reactivated - cleared history and resetting baseline")
+
     for field, value in update_data.items():
         setattr(alert, field, value)
 
@@ -274,6 +288,15 @@ def toggle_alert_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Alert not found"
         )
+
+    # Detect reactivation and reset baseline
+    if not alert.is_active and is_active:
+        # Transitioning from inactive to active (reactivation)
+        # Clear old history and reset last_checked_at for fresh baseline
+        from backend.models import ItemHistory
+        db.query(ItemHistory).filter(ItemHistory.alert_id == alert.id).delete()
+        alert.last_checked_at = None
+        logger.info(f"Alert {alert.id} reactivated - cleared history and resetting baseline")
 
     alert.is_active = is_active
     db.commit()

@@ -43,7 +43,6 @@ class SchedulerService:
     def __init__(self):
         """Initialize scheduler (not started yet)."""
         self.scheduler = BackgroundScheduler()
-        self.scanner = ScannerService()
         self.notifier = get_notification_service()
         logger.info("Scheduler service initialized")
 
@@ -164,8 +163,11 @@ class SchedulerService:
         try:
             logger.info(f"Scanning alert: {alert.name}")
 
+            # Create scanner with db session
+            scanner = ScannerService(db)
+
             # Run scanner
-            new_items = self.scanner.check_alert(alert)
+            new_items = scanner.check_alert(alert)
 
             # Update alert metadata
             alert.last_checked_at = datetime.utcnow()
@@ -216,8 +218,11 @@ class SchedulerService:
 
             logger.info(f"Manually running alert: {alert.name}")
 
+            # Create scanner with db session
+            scanner = ScannerService(db)
+
             # Run scanner
-            new_items = self.scanner.check_alert(alert)
+            new_items = scanner.check_alert(alert)
 
             # Update metadata
             alert.last_checked_at = datetime.utcnow()

@@ -74,8 +74,10 @@ def get_all_history(
     user_alert_ids = db.query(Alert.id).filter(Alert.user_id == user.id).all()
     user_alert_ids = [alert_id for (alert_id,) in user_alert_ids]
 
-    # Query item history for user's alerts
-    query = db.query(ItemHistory).filter(ItemHistory.alert_id.in_(user_alert_ids))
+    # Query item history for user's alerts (exclude baseline items)
+    query = db.query(ItemHistory)\
+        .filter(ItemHistory.alert_id.in_(user_alert_ids))\
+        .filter(ItemHistory.is_baseline == False)
 
     if notified_only:
         query = query.filter(ItemHistory.notified_at.isnot(None))
@@ -135,8 +137,10 @@ def get_alert_history(
             detail="Alert not found"
         )
 
-    # Query item history for this alert
-    query = db.query(ItemHistory).filter(ItemHistory.alert_id == alert_id)
+    # Query item history for this alert (exclude baseline items)
+    query = db.query(ItemHistory)\
+        .filter(ItemHistory.alert_id == alert_id)\
+        .filter(ItemHistory.is_baseline == False)
 
     if notified_only:
         query = query.filter(ItemHistory.notified_at.isnot(None))

@@ -106,6 +106,12 @@ class ScannerService:
             items = results.get("items", [])
             logger.info(f"Found {len(items)} items for alert {alert.id}")
 
+            # Check if this is the first run (baseline establishment)
+            is_first_run = alert.last_checked_at is None
+
+            if is_first_run:
+                logger.info(f"First run for alert {alert.id} - establishing baseline with {len(items)} items (no notifications)")
+
             # Check for duplicates and filter new items
             new_items = []
             for item in items:
@@ -117,11 +123,14 @@ class ScannerService:
                     continue
 
                 # New item!
-                new_items.append(item)
-                logger.debug(f"New item found: {item.get('title')} ({item_id})")
+                if not is_first_run:
+                    # Only add to notification list if not first run
+                    new_items.append(item)
+                    logger.debug(f"New item found: {item.get('title')} ({item_id})")
 
-                # Add to history
-                ItemHistory.record(self.db, alert.id, item)
+                # Always add to history (for baseline or deduplication)
+                # Mark as baseline if this is first run
+                ItemHistory.record(self.db, alert.id, item, is_baseline=is_first_run)
 
             # Update alert stats
             alert.last_checked_at = datetime.utcnow()
@@ -130,7 +139,10 @@ class ScannerService:
 
             self.db.commit()
 
-            logger.info(f"Alert {alert.id}: Found {len(new_items)} new items")
+            if is_first_run:
+                logger.info(f"Alert {alert.id}: Baseline established with {len(items)} items, no notifications sent")
+            else:
+                logger.info(f"Alert {alert.id}: Found {len(new_items)} new items")
 
             return new_items
 
