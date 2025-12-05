@@ -21,6 +21,8 @@ export interface Alert {
   check_interval_minutes: number;
   notification_config: Record<string, any>;
   last_checked_at?: string;
+  last_found_count: number;
+  total_found_count: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -37,6 +39,7 @@ export interface AlertCreate {
   price_max?: number;
   check_interval_minutes: number;
   notification_config?: Record<string, any>;
+  is_active?: boolean;
 }
 
 export interface ItemHistory {

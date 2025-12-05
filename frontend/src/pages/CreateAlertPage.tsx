@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as api from '../services/api';
-import type { AlertCreate, Brand } from '../types';
+import type { AlertCreate, Brand, Category } from '../types';
 
 export default function CreateAlertPage() {
   const [formData, setFormData] = useState<AlertCreate>({
@@ -24,6 +24,12 @@ export default function CreateAlertPage() {
   const [brandResults, setBrandResults] = useState<Brand[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
   const [brandSearching, setBrandSearching] = useState(false);
+
+  // Category search state
+  const [categoryQuery, setCategoryQuery] = useState('');
+  const [categoryResults, setCategoryResults] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [categorySearching, setCategorySearching] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +105,61 @@ export default function CreateAlertPage() {
     }));
   };
 
+  const handleCategorySearch = async (query: string) => {
+    setCategoryQuery(query);
+
+    if (query.length < 2) {
+      setCategoryResults([]);
+      return;
+    }
+
+    setCategorySearching(true);
+    try {
+      const results = await api.searchCategories(query, formData.country_code);
+      setCategoryResults(results);
+    } catch (err) {
+      console.error('Category search failed:', err);
+      setCategoryResults([]);
+    } finally {
+      setCategorySearching(false);
+    }
+  };
+
+  const handleSelectCategory = (category: Category) => {
+    // Add category if not already selected
+    if (!selectedCategories.find(c => c.id === category.id)) {
+      const newCategories = [...selectedCategories, category];
+      setSelectedCategories(newCategories);
+
+      // Update formData with category IDs and names
+      const catalogIds = newCategories.map(c => c.vinted_id).join(',');
+      const catalogNames = newCategories.map(c => c.name).join(', ');
+      setFormData(prev => ({
+        ...prev,
+        catalog_ids: catalogIds,
+        catalog_names: catalogNames
+      }));
+    }
+
+    // Clear search
+    setCategoryQuery('');
+    setCategoryResults([]);
+  };
+
+  const handleRemoveCategory = (categoryId: string) => {
+    const newCategories = selectedCategories.filter(c => c.id !== categoryId);
+    setSelectedCategories(newCategories);
+
+    // Update formData
+    const catalogIds = newCategories.map(c => c.vinted_id).join(',');
+    const catalogNames = newCategories.map(c => c.name).join(', ');
+    setFormData(prev => ({
+      ...prev,
+      catalog_ids: catalogIds,
+      catalog_names: catalogNames
+    }));
+  };
+
   return (
     <div>
       <h1>Create New Alert</h1>
@@ -144,14 +205,86 @@ export default function CreateAlertPage() {
           </div>
 
           <div className="form-group">
-            <label>Category IDs</label>
+            <label>Categories (Optional)</label>
+
+            {/* Selected categories */}
+            {selectedCategories.length > 0 && (
+              <div style={{ marginBottom: '10px' }}>
+                {selectedCategories.map(category => (
+                  <span
+                    key={category.id}
+                    style={{
+                      display: 'inline-block',
+                      background: '#e0e0e0',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      marginRight: '8px',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    {category.name}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCategory(category.id)}
+                      style={{
+                        marginLeft: '8px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        color: '#666'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Category search input */}
             <input
               type="text"
-              value={formData.catalog_ids}
-              onChange={(e) => handleChange('catalog_ids', e.target.value)}
-              placeholder="e.g., 16 or 16,17"
+              value={categoryQuery}
+              onChange={(e) => handleCategorySearch(e.target.value)}
+              placeholder="Search categories (e.g., shoes, hats, dresses)"
             />
-            <small>Use category search to find IDs (comma-separated)</small>
+            <small>Type to search for categories by name</small>
+
+            {/* Category search results */}
+            {categorySearching && <div>Searching...</div>}
+            {categoryResults.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                background: 'white',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                marginTop: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                zIndex: 1000,
+                width: 'calc(100% - 40px)'
+              }}>
+                {categoryResults.map(category => (
+                  <div
+                    key={category.id}
+                    onClick={() => handleSelectCategory(category)}
+                    style={{
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #eee'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                  >
+                    <strong>{category.name}</strong>
+                    <span style={{ fontSize: '0.8em', color: '#666', marginLeft: '8px' }}>
+                      (ID: {category.vinted_id})
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="form-group">

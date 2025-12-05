@@ -32,7 +32,7 @@ export default function AlertsPage() {
       await api.deleteAlert(id);
       setAlerts(alerts.filter(a => a.id !== id));
     } catch (err: any) {
-      alert('Failed to delete alert');
+      window.alert('Failed to delete alert');
     }
   };
 
@@ -41,7 +41,7 @@ export default function AlertsPage() {
       await api.updateAlert(alert.id, { ...alert, is_active: !alert.is_active });
       setAlerts(alerts.map(a => a.id === alert.id ? { ...a, is_active: !a.is_active } : a));
     } catch (err: any) {
-      alert('Failed to update alert');
+      window.alert('Failed to update alert');
     }
   };
 
@@ -51,7 +51,7 @@ export default function AlertsPage() {
   return (
     <div>
       <h1>My Alerts</h1>
-      
+
       {alerts.length === 0 ? (
         <div className="card">
           <p>No alerts yet. <Link to="/alerts/new">Create your first alert</Link></p>
