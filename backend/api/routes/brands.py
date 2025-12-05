@@ -27,7 +27,7 @@ router = APIRouter(prefix="/brands", tags=["Brands"])
 @router.get("/search", response_model=List[BrandResponse])
 def search_brands(
     q: str = Query(..., min_length=1, max_length=100, description="Search query"),
-    country_code: str = Query(..., min_length=2, max_length=2, description="Country code (e.g., 'fr')"),
+    country_code: str = Query(..., min_length=2, max_length=5, description="Country code (e.g., 'fr')"),
     limit: int = Query(default=20, ge=1, le=100, description="Max results"),
     db: Session = Depends(get_db)
 ):

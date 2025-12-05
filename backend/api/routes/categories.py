@@ -28,7 +28,7 @@ router = APIRouter(prefix="/categories", tags=["Categories"])
 
 @router.get("", response_model=List[CategoryResponse])
 def get_root_categories(
-    country_code: str = Query(..., min_length=2, max_length=2, description="Country code"),
+    country_code: str = Query(..., min_length=2, max_length=5, description="Country code"),
     include_children: bool = Query(default=True, description="Include child categories in tree"),
     db: Session = Depends(get_db)
 ):
@@ -84,7 +84,7 @@ def get_root_categories(
 @router.get("/search", response_model=List[CategoryResponse])
 def search_categories(
     q: str = Query(..., min_length=1, max_length=100, description="Search query"),
-    country_code: str = Query(..., min_length=2, max_length=2, description="Country code"),
+    country_code: str = Query(..., min_length=2, max_length=5, description="Country code"),
     limit: int = Query(default=20, ge=1, le=100, description="Max results"),
     db: Session = Depends(get_db)
 ):

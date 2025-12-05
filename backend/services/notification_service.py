@@ -121,7 +121,7 @@ class NotificationService:
         # Log each item
         for item in items:
             logger.info(
-                f"[EMAIL] - {item['title']} | {item['price']} {item['currency']} | "
+                f"[EMAIL] - {item['title']} | {item['price']} {item.get('currency', '')} | "
                 f"{item['url']}"
             )
 
@@ -162,7 +162,7 @@ class NotificationService:
         # Log each item
         for item in items:
             logger.info(
-                f"[SLACK] - {item['title']} | {item['price']} {item['currency']} | "
+                f"[SLACK] - {item['title']} | {item['price']} {item.get('currency', '')} | "
                 f"{item['url']}"
             )
 
@@ -226,7 +226,7 @@ class NotificationService:
         # Log each item
         for item in items:
             logger.info(
-                f"[TELEGRAM] - {item['title']} | {item['price']} {item['currency']} | "
+                f"[TELEGRAM] - {item['title']} | {item['price']} {item.get('currency', '')} | "
                 f"{item['url']}"
             )
 
@@ -271,7 +271,7 @@ class NotificationService:
         for i, item in enumerate(items, 1):
             logger.info(
                 f"{i}. {item['title']} - "
-                f"{item['price']} {item['currency']} - "
+                f"{item['price']} {item.get('currency', '')} - "
                 f"{item['url']}"
             )
 

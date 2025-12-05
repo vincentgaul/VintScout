@@ -163,7 +163,7 @@ export default function CreateAlertPage() {
   return (
     <div>
       <h1>Create New Alert</h1>
-      
+
       <div className="card">
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -184,12 +184,31 @@ export default function CreateAlertPage() {
               onChange={(e) => handleChange('country_code', e.target.value)}
               required
             >
-              <option value="fr">France (fr)</option>
-              <option value="de">Germany (de)</option>
-              <option value="es">Spain (es)</option>
-              <option value="it">Italy (it)</option>
-              <option value="be">Belgium (be)</option>
-              <option value="nl">Netherlands (nl)</option>
+              <option value="at">Austria (vinted.at)</option>
+              <option value="be">Belgium (vinted.be)</option>
+              <option value="hr">Croatia (vinted.hr)</option>
+              <option value="cz">Czech Republic (vinted.cz)</option>
+              <option value="dk">Denmark (vinted.dk)</option>
+              <option value="ee">Estonia (vinted.ee)</option>
+              <option value="fi">Finland (vinted.fi)</option>
+              <option value="fr">France (vinted.fr)</option>
+              <option value="de">Germany (vinted.de)</option>
+              <option value="gr">Greece (vinted.gr)</option>
+              <option value="hu">Hungary (vinted.hu)</option>
+              <option value="ie">Ireland (vinted.ie)</option>
+              <option value="it">Italy (vinted.it)</option>
+              <option value="lv">Latvia (vinted.lv)</option>
+              <option value="lt">Lithuania (vinted.lt)</option>
+              <option value="lu">Luxembourg (vinted.lu)</option>
+              <option value="nl">Netherlands (vinted.nl)</option>
+              <option value="pl">Poland (vinted.pl)</option>
+              <option value="pt">Portugal (vinted.pt)</option>
+              <option value="ro">Romania (vinted.ro)</option>
+              <option value="sk">Slovakia (vinted.sk)</option>
+              <option value="si">Slovenia (vinted.si)</option>
+              <option value="es">Spain (vinted.es)</option>
+              <option value="se">Sweden (vinted.se)</option>
+              <option value="uk">UK (vinted.co.uk)</option>
             </select>
           </div>
 
@@ -404,7 +423,7 @@ export default function CreateAlertPage() {
           </div>
 
           {error && <div className="error">{error}</div>}
-          
+
           <button type="submit" disabled={loading}>
             {loading ? 'Creating...' : 'Create Alert'}
           </button>

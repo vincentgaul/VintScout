@@ -23,7 +23,7 @@ class AlertBase(BaseModel):
     This is inherited by AlertCreate and AlertUpdate to avoid duplication.
     """
     name: str = Field(..., min_length=1, max_length=255, description="Human-readable alert name")
-    country_code: str = Field(..., min_length=2, max_length=2, description="Vinted country code (e.g., 'fr', 'de')")
+    country_code: str = Field(..., min_length=2, max_length=5, description="Vinted country code (e.g., 'fr', 'de', 'co.uk')")
     search_text: Optional[str] = Field(None, max_length=500, description="Free-text search query")
     brand_ids: Optional[str] = Field(None, description="Comma-separated brand IDs from Vinted")
     brand_names: Optional[str] = Field(None, description="Comma-separated brand names for display")

@@ -64,7 +64,18 @@ class VintedClient:
         "lu": "https://www.vinted.lu",
         "pt": "https://www.vinted.pt",
         "se": "https://www.vinted.se",
-        "us": "https://www.vinted.com"
+        "us": "https://www.vinted.com",
+        "ro": "https://www.vinted.ro",
+        "gr": "https://www.vinted.gr",
+        "hr": "https://www.vinted.hr",
+        "hu": "https://www.vinted.hu",
+        "sk": "https://www.vinted.sk",
+        "si": "https://www.vinted.si",
+        "fi": "https://www.vinted.fi",
+        "dk": "https://www.vinted.dk",
+        "ee": "https://www.vinted.ee",
+        "lv": "https://www.vinted.lv",
+        "ie": "https://www.vinted.ie"
     }
 
     def __init__(self, country_code: str = "fr"):
