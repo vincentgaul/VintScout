@@ -3,6 +3,41 @@
 
 ---
 
+## ⚠️ PLAN STATUS UPDATE (December 4, 2025)
+
+**This plan has been partially superseded by development discoveries.**
+
+### What Changed During Phase 1 Development
+
+1. **Brand Search API is DEAD** (Confirmed December 2025)
+   - Vinted's `/api/v2/catalog/brands` endpoint returns **404 on all domains**
+   - Brand discovery via API is impossible
+   - Forced pivot from "intelligent brand autocomplete" to "text search only" for MVP
+   - See "Discovery: Brand Search API is Dead" section below for details
+
+2. **Phase 1 Scope Reduced** (Pragmatic MVP)
+   - Brand autocomplete **postponed to Phase 2+** (requires manual brand ID curation)
+   - Notification delivery **stubbed** (email/Slack/Telegram log only)
+   - Password reset **deferred** to Phase 2
+   - Test suite **incomplete** (needs work)
+
+3. **What Actually Works** (Phase 1 Complete)
+   - ✅ Core alert system (create, read, update, delete)
+   - ✅ Category tree navigation (2,907 categories cached)
+   - ✅ Vinted item search with all filters
+   - ✅ Background scheduler (checks alerts every minute)
+   - ✅ Item deduplication (prevents duplicate notifications)
+   - ✅ Text search workaround for brands ("Nike sneakers" instead of brand ID)
+
+**For accurate current status, see BACKEND_STATUS.md**
+
+**This document remains useful for:**
+- Understanding original vision
+- Phase 2+ implementation guidance
+- Architecture patterns and technical decisions
+
+---
+
 ## Executive Summary
 
 **Project**: VintedScanner Web - Modern web-based alert platform for Vinted marketplace notifications
@@ -2228,6 +2263,100 @@ CATEGORY_CACHE_REFRESH_DAYS=7  # Refresh category tree weekly
   - Clear disclaimers for users
   - Consult lawyer if needed
   - **Brand/category data is public** - lower risk
+
+---
+
+## 📊 Actual Phase 1 Deliverables (December 4, 2025)
+
+### ✅ What Was Successfully Delivered
+
+**Backend Core (100% Complete)**
+- ✅ FastAPI REST API with JWT authentication
+- ✅ SQLAlchemy models (User, Alert, Category, Brand, ItemHistory)
+- ✅ Alembic migrations
+- ✅ Alert CRUD endpoints
+- ✅ Category tree API (working perfectly)
+- ✅ Vinted item search integration
+- ✅ Background scheduler with APScheduler
+- ✅ Item deduplication system
+- ✅ Session management for Vinted API
+
+**Category Navigation (Exceeds Plan)**
+- ✅ Full category tree caching (2,907 categories for FR)
+- ✅ CategoryService with TTL-based caching
+- ✅ `/api/categories` endpoints working
+- ✅ Hierarchical tree structure with parent-child relationships
+
+**Alert System (Complete)**
+- ✅ Create, read, update, delete alerts
+- ✅ Text search capability
+- ✅ Price range filtering
+- ✅ Category filtering (using catalog_ids)
+- ✅ Brand filtering (using brand_ids - if known manually)
+
+### ⚠️ Scope Reductions (Pragmatic MVP Decisions)
+
+**Brand Autocomplete → Deferred to Phase 2**
+- ❌ `BrandAutocomplete` component not built (API is dead)
+- ❌ Popular brands seed list empty (requires manual curation)
+- ⚠️ Brand endpoints return `[]` gracefully
+- ✅ Workaround: Text search ("Nike sneakers" works well)
+- **Reason**: Vinted's `/api/v2/catalog/brands` returns 404
+- **Impact**: Users type brand in search text instead of selecting from dropdown
+- **Phase 2 Plan**: Manually curate 100-200 brand IDs
+
+**Notification Delivery → Stubbed for Phase 1**
+- ❌ Email sending not implemented (logs only)
+- ❌ Slack webhooks not implemented (logs only)
+- ❌ Telegram bot not implemented (logs only)
+- ✅ Notification framework architecture in place
+- **Reason**: MVP prioritized core alert functionality
+- **Phase 2 Plan**: Implement actual SMTP/webhook delivery
+
+**Password Reset → Deferred**
+- ❌ Password reset flow not implemented
+- ❌ Email verification not implemented
+- ✅ Basic auth (register/login) works
+- **Phase 2 Plan**: Add password reset + email verification
+
+**Test Suite → Incomplete**
+- ❌ No pytest tests written
+- ❌ `backend/tests/` only has empty `__init__.py`
+- **Should have been**: Week 1 deliverable
+- **Phase 2 Plan**: Write comprehensive test suite
+
+### 📋 Phase 1 vs Plan Comparison
+
+| Feature | Planned | Delivered | Status |
+|---------|---------|-----------|--------|
+| User Registration/Login | ✅ | ✅ | Complete |
+| Alert CRUD | ✅ | ✅ | Complete |
+| Category Tree | ✅ | ✅ | **Exceeds plan** (2,907 cached) |
+| Brand Autocomplete | ✅ | ❌ | Deferred (API dead) |
+| Text Search | ✅ | ✅ | Complete |
+| Vinted Item Search | ✅ | ✅ | Complete |
+| Background Scheduler | ✅ | ✅ | Complete |
+| Item Deduplication | ✅ | ✅ | Complete |
+| Email Notifications | ✅ | ⚠️ | Stubbed (logs only) |
+| Slack Notifications | ✅ | ⚠️ | Stubbed (logs only) |
+| Telegram Notifications | ✅ | ⚠️ | Stubbed (logs only) |
+| Password Reset | ✅ | ❌ | Not implemented |
+| Popular Brands Seed | ✅ | ❌ | Empty dictionary |
+| Pytest Suite | ✅ | ❌ | Not implemented |
+
+### 🎯 MVP Reality Check
+
+**Original Claim**: "Backend MVP is 100% complete and production-ready for Phase 1"
+
+**More Accurate**: "Backend MVP Phase 1 core functionality is complete with documented limitations. Not all originally planned features were delivered, but a functional alert system with category navigation and text search is production-ready for Phase 1 use cases."
+
+**What This Means for Users**:
+- ✅ Can create alerts with text search + categories
+- ✅ Background scanning works automatically
+- ✅ Items are found and deduplicated correctly
+- ⚠️ Brand selection is manual (type "Nike" in search text)
+- ⚠️ Notifications are logged, not delivered via email/Slack/Telegram
+- ⚠️ No password reset yet (don't lose your password!)
 
 ---
 
