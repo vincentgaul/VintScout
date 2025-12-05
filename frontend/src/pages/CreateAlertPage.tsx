@@ -1,8 +1,43 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CheckboxTree from 'react-checkbox-tree';
+import 'react-checkbox-tree/lib/react-checkbox-tree.css';
+import {
+  FaCheckSquare,
+  FaSquare,
+  FaChevronRight,
+  FaChevronDown,
+  FaPlusSquare,
+  FaMinusSquare,
+  FaFolder,
+  FaFolderOpen,
+  FaFile
+} from 'react-icons/fa';
 import * as api from '../services/api';
 import type { AlertCreate, Brand, Category } from '../types';
-import CategoryTree from '../components/CategoryTree';
+
+// Helper to transform Category[] to CheckboxTree nodes
+const transformCategoriesToNodes = (categories: Category[]): any[] => {
+  return categories.map(cat => ({
+    value: cat.id,
+    label: cat.name,
+    children: cat.children && cat.children.length > 0
+      ? transformCategoriesToNodes(cat.children)
+      : undefined
+  }));
+};
+
+// Helper to find category by ID (recursive)
+const findCategoryById = (categories: Category[], id: string): Category | undefined => {
+  for (const cat of categories) {
+    if (cat.id === id) return cat;
+    if (cat.children) {
+      const found = findCategoryById(cat.children, id);
+      if (found) return found;
+    }
+  }
+  return undefined;
+};
 
 export default function CreateAlertPage() {
   const [formData, setFormData] = useState<AlertCreate>({
@@ -29,7 +64,8 @@ export default function CreateAlertPage() {
   // Category Tree state
   const [treeCategories, setTreeCategories] = useState<Category[]>([]);
   const [loadingTree, setLoadingTree] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   // Fetch category tree when country changes
   useEffect(() => {
@@ -48,6 +84,25 @@ export default function CreateAlertPage() {
 
     fetchCategories();
   }, [formData.country_code]);
+
+  // Update formData when checked categories change
+  useEffect(() => {
+    if (treeCategories.length === 0) return;
+
+    const selectedCats = checkedCategories
+      .map(id => findCategoryById(treeCategories, id))
+      .filter((c): c is Category => !!c);
+
+    const catalogIds = selectedCats.map(c => c.vinted_id).join(',');
+    const catalogNames = selectedCats.map(c => c.name).join(', ');
+
+    setFormData(prev => ({
+      ...prev,
+      catalog_ids: catalogIds,
+      catalog_names: catalogNames
+    }));
+  }, [checkedCategories, treeCategories]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,41 +178,6 @@ export default function CreateAlertPage() {
     }));
   };
 
-
-
-  const handleSelectCategory = (category: Category) => {
-    // Add category if not already selected
-    if (!selectedCategories.find(c => c.id === category.id)) {
-      const newCategories = [...selectedCategories, category];
-      setSelectedCategories(newCategories);
-
-      // Update formData with category IDs and names
-      const catalogIds = newCategories.map(c => c.vinted_id).join(',');
-      const catalogNames = newCategories.map(c => c.name).join(', ');
-      setFormData(prev => ({
-        ...prev,
-        catalog_ids: catalogIds,
-        catalog_names: catalogNames
-      }));
-    }
-
-
-  };
-
-  const handleRemoveCategory = (categoryId: string) => {
-    const newCategories = selectedCategories.filter(c => c.id !== categoryId);
-    setSelectedCategories(newCategories);
-
-    // Update formData
-    const catalogIds = newCategories.map(c => c.vinted_id).join(',');
-    const catalogNames = newCategories.map(c => c.name).join(', ');
-    setFormData(prev => ({
-      ...prev,
-      catalog_ids: catalogIds,
-      catalog_names: catalogNames
-    }));
-  };
-
   return (
     <div>
       <h1>Create New Alert</h1>
@@ -218,62 +238,41 @@ export default function CreateAlertPage() {
               onChange={(e) => handleChange('search_text', e.target.value)}
               placeholder="e.g., Nike sneakers size 42"
             />
-            <small>Tip: Include brand name in search (e.g., "Nike sneakers")</small>
           </div>
 
           <div className="form-group">
             <label>Categories (Optional)</label>
 
-            {/* Selected categories */}
-            {selectedCategories.length > 0 && (
-              <div style={{ marginBottom: '10px' }}>
-                {selectedCategories.map(category => (
-                  <span
-                    key={category.id}
-                    style={{
-                      display: 'inline-block',
-                      background: '#e0e0e0',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      marginRight: '8px',
-                      marginBottom: '8px'
-                    }}
-                  >
-                    {category.name}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveCategory(category.id)}
-                      style={{
-                        marginLeft: '8px',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        color: '#666'
-                      }}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-
             {/* Category Tree */}
             <div className="mb-4">
               {loadingTree ? (
                 <div className="text-sm text-gray-500 p-4 border rounded bg-gray-50 text-center">
-                  Loading categories for {formData.country_code.toUpperCase()}...
+                  Loading categories...
                 </div>
               ) : (
-                <CategoryTree
-                  categories={treeCategories}
-                  onSelect={handleSelectCategory}
-                  selectedIds={selectedCategories.map(c => c.id)}
-                />
+                <div className="border rounded p-2 bg-white" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <CheckboxTree
+                    nodes={transformCategoriesToNodes(treeCategories)}
+                    checked={checkedCategories}
+                    expanded={expandedCategories}
+                    onCheck={(checked) => setCheckedCategories(checked as string[])}
+                    onExpand={(expanded) => setExpandedCategories(expanded as string[])}
+                    icons={{
+                      check: <FaCheckSquare />,
+                      uncheck: <FaSquare />,
+                      halfCheck: <FaMinusSquare />,
+                      expandClose: <FaChevronRight />,
+                      expandOpen: <FaChevronDown />,
+                      expandAll: <FaPlusSquare />,
+                      collapseAll: <FaMinusSquare />,
+                      parentClose: <FaFolder />,
+                      parentOpen: <FaFolderOpen />,
+                      leaf: <FaFile />
+                    }}
+                  />
+                </div>
               )}
             </div>
-            <small>Browse and select categories from the list</small>
           </div>
 
           <div className="form-group">
@@ -343,7 +342,6 @@ export default function CreateAlertPage() {
               onChange={(e) => handleBrandSearch(e.target.value)}
               placeholder="Search brands (e.g., nike, zara, adidas)"
             />
-            <small>Type to search for brands by name</small>
 
             {/* Brand search results */}
             {brandSearching && <div>Searching...</div>}
