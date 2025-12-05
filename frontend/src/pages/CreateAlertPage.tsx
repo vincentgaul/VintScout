@@ -49,7 +49,7 @@ export default function CreateAlertPage() {
     price_min: undefined,
     price_max: undefined,
     check_interval_minutes: 15,
-    notification_config: { email: { enabled: false } }
+    notification_config: { telegram: { enabled: true } }
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
