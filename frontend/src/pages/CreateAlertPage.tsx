@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as api from '../services/api';
 import type { AlertCreate, Brand, Category } from '../types';
+import CategoryTree from '../components/CategoryTree';
 
 export default function CreateAlertPage() {
   const [formData, setFormData] = useState<AlertCreate>({
@@ -25,11 +26,28 @@ export default function CreateAlertPage() {
   const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
   const [brandSearching, setBrandSearching] = useState(false);
 
-  // Category search state
-  const [categoryQuery, setCategoryQuery] = useState('');
-  const [categoryResults, setCategoryResults] = useState<Category[]>([]);
+  // Category Tree state
+  const [treeCategories, setTreeCategories] = useState<Category[]>([]);
+  const [loadingTree, setLoadingTree] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-  const [categorySearching, setCategorySearching] = useState(false);
+
+  // Fetch category tree when country changes
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingTree(true);
+      try {
+        const categories = await api.getCategories(formData.country_code);
+        setTreeCategories(categories);
+      } catch (error) {
+        console.error('Failed to fetch category tree:', error);
+        setTreeCategories([]);
+      } finally {
+        setLoadingTree(false);
+      }
+    };
+
+    fetchCategories();
+  }, [formData.country_code]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,25 +123,7 @@ export default function CreateAlertPage() {
     }));
   };
 
-  const handleCategorySearch = async (query: string) => {
-    setCategoryQuery(query);
 
-    if (query.length < 2) {
-      setCategoryResults([]);
-      return;
-    }
-
-    setCategorySearching(true);
-    try {
-      const results = await api.searchCategories(query, formData.country_code);
-      setCategoryResults(results);
-    } catch (err) {
-      console.error('Category search failed:', err);
-      setCategoryResults([]);
-    } finally {
-      setCategorySearching(false);
-    }
-  };
 
   const handleSelectCategory = (category: Category) => {
     // Add category if not already selected
@@ -141,9 +141,7 @@ export default function CreateAlertPage() {
       }));
     }
 
-    // Clear search
-    setCategoryQuery('');
-    setCategoryResults([]);
+
   };
 
   const handleRemoveCategory = (categoryId: string) => {
@@ -261,49 +259,21 @@ export default function CreateAlertPage() {
               </div>
             )}
 
-            {/* Category search input */}
-            <input
-              type="text"
-              value={categoryQuery}
-              onChange={(e) => handleCategorySearch(e.target.value)}
-              placeholder="Search categories (e.g., shoes, hats, dresses)"
-            />
-            <small>Type to search for categories by name</small>
-
-            {/* Category search results */}
-            {categorySearching && <div>Searching...</div>}
-            {categoryResults.length > 0 && (
-              <div style={{
-                position: 'absolute',
-                background: 'white',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                marginTop: '4px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                zIndex: 1000,
-                width: 'calc(100% - 40px)'
-              }}>
-                {categoryResults.map(category => (
-                  <div
-                    key={category.id}
-                    onClick={() => handleSelectCategory(category)}
-                    style={{
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #eee'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                  >
-                    <strong>{category.name}</strong>
-                    <span style={{ fontSize: '0.8em', color: '#666', marginLeft: '8px' }}>
-                      (ID: {category.vinted_id})
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Category Tree */}
+            <div className="mb-4">
+              {loadingTree ? (
+                <div className="text-sm text-gray-500 p-4 border rounded bg-gray-50 text-center">
+                  Loading categories for {formData.country_code.toUpperCase()}...
+                </div>
+              ) : (
+                <CategoryTree
+                  categories={treeCategories}
+                  onSelect={handleSelectCategory}
+                  selectedIds={selectedCategories.map(c => c.id)}
+                />
+              )}
+            </div>
+            <small>Browse and select categories from the list</small>
           </div>
 
           <div className="form-group">

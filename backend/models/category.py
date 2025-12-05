@@ -45,7 +45,8 @@ class Category(Base):
 
     # Category information
     name = Column(String(255), nullable=False, index=True)  # e.g., "Hats"
-    country_code = Column(String(2), nullable=False, index=True)  # e.g., "fr"
+    code = Column(String(80), nullable=True)  # e.g., "WOMEN_ROOT"
+    country_code = Column(String(2), nullable=True, index=True)  # Null for global categories
 
     # Hierarchy - Self-referencing for tree structure
     parent_id = Column(String(36), ForeignKey("categories.id"), nullable=True, index=True)
@@ -54,6 +55,10 @@ class Category(Base):
     # Full path for display and search
     # e.g., "/Women/Accessories/Hats"
     path = Column(Text, nullable=False)
+
+    # URLs
+    url = Column(String(256), nullable=True)
+    url_en = Column(String(256), nullable=True)
 
     # Metadata from Vinted
     item_count = Column(Integer, nullable=True)  # Number of items in this category
@@ -116,39 +121,40 @@ class Category(Base):
         return result
 
     @classmethod
-    def get_root_categories(cls, session, country_code):
+    def get_root_categories(cls, session, country_code=None):
         """
-        Get all root-level categories for a country.
-
+        Get all root-level categories.
+        
         Args:
             session: Database session
-            country_code: Country code (e.g., "fr")
+            country_code: Optional country code (ignored for global categories)
 
         Returns:
             List of root Category objects (level=0, parent_id=None)
         """
-        return session.query(cls)\
-            .filter(cls.country_code == country_code)\
-            .filter(cls.parent_id == None)\
-            .order_by(cls.name)\
-            .all()
+        query = session.query(cls).filter(cls.parent_id == None)
+        
+        # If we still have country-specific categories mixed in, filter by it
+        # But for global migration, we mostly ignore it or look for null
+        # query = query.filter(or_(cls.country_code == country_code, cls.country_code == None))
+        
+        return query.order_by(cls.name).all()
 
     @classmethod
-    def search_by_name(cls, session, query, country_code, limit=20):
+    def search_by_name(cls, session, query, country_code=None, limit=20):
         """
         Search categories by name (flat search, not hierarchical).
 
         Args:
             session: Database session
             query: Search string
-            country_code: Country code
+            country_code: Ignored for global categories
             limit: Max results
 
         Returns:
             List of Category objects matching the query
         """
         return session.query(cls)\
-            .filter(cls.country_code == country_code)\
             .filter(cls.name.ilike(f"%{query}%"))\
             .order_by(cls.level, cls.name)\
             .limit(limit)\
