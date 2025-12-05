@@ -30,7 +30,9 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL: str = "sqlite:///./data/vinted.db"
+    # Use absolute path to ensure we always find the DB, regardless of where the app is started
+    _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATABASE_URL: str = f"sqlite:///{os.path.join(_BASE_DIR, 'data', 'vinted.db')}"
 
     # Authentication
     REQUIRE_AUTH: bool = False  # Set to True for cloud mode, False for self-hosted

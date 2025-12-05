@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as api from '../services/api';
-import type { AlertCreate } from '../types';
+import type { AlertCreate, Brand } from '../types';
 
 export default function CreateAlertPage() {
   const [formData, setFormData] = useState<AlertCreate>({
@@ -18,6 +18,12 @@ export default function CreateAlertPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Brand search state
+  const [brandQuery, setBrandQuery] = useState('');
+  const [brandResults, setBrandResults] = useState<Brand[]>([]);
+  const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
+  const [brandSearching, setBrandSearching] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +42,61 @@ export default function CreateAlertPage() {
 
   const handleChange = (field: keyof AlertCreate, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleBrandSearch = async (query: string) => {
+    setBrandQuery(query);
+
+    if (query.length < 2) {
+      setBrandResults([]);
+      return;
+    }
+
+    setBrandSearching(true);
+    try {
+      const results = await api.searchBrands(query, formData.country_code);
+      setBrandResults(results);
+    } catch (err) {
+      console.error('Brand search failed:', err);
+      setBrandResults([]);
+    } finally {
+      setBrandSearching(false);
+    }
+  };
+
+  const handleSelectBrand = (brand: Brand) => {
+    // Add brand if not already selected
+    if (!selectedBrands.find(b => b.id === brand.id)) {
+      const newBrands = [...selectedBrands, brand];
+      setSelectedBrands(newBrands);
+
+      // Update formData with brand IDs and names
+      const brandIds = newBrands.map(b => b.vinted_id).join(',');
+      const brandNames = newBrands.map(b => b.name).join(', ');
+      setFormData(prev => ({
+        ...prev,
+        brand_ids: brandIds,
+        brand_names: brandNames
+      }));
+    }
+
+    // Clear search
+    setBrandQuery('');
+    setBrandResults([]);
+  };
+
+  const handleRemoveBrand = (brandId: string) => {
+    const newBrands = selectedBrands.filter(b => b.id !== brandId);
+    setSelectedBrands(newBrands);
+
+    // Update formData
+    const brandIds = newBrands.map(b => b.vinted_id).join(',');
+    const brandNames = newBrands.map(b => b.name).join(', ');
+    setFormData(prev => ({
+      ...prev,
+      brand_ids: brandIds,
+      brand_names: brandNames
+    }));
   };
 
   return (
@@ -116,14 +177,83 @@ export default function CreateAlertPage() {
           </div>
 
           <div className="form-group">
-            <label>Brand IDs (Advanced - Optional)</label>
+            <label>Brands (Optional)</label>
+
+            {/* Selected brands */}
+            {selectedBrands.length > 0 && (
+              <div style={{ marginBottom: '10px' }}>
+                {selectedBrands.map(brand => (
+                  <span
+                    key={brand.id}
+                    style={{
+                      display: 'inline-block',
+                      background: '#e0e0e0',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      marginRight: '8px',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    {brand.name}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveBrand(brand.id)}
+                      style={{
+                        marginLeft: '8px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        color: '#666'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Brand search input */}
             <input
               type="text"
-              value={formData.brand_ids}
-              onChange={(e) => handleChange('brand_ids', e.target.value)}
-              placeholder="e.g., 53,14 (Nike=53, Adidas=14)"
+              value={brandQuery}
+              onChange={(e) => handleBrandSearch(e.target.value)}
+              placeholder="Search brands (e.g., nike, zara, adidas)"
             />
-            <small>Only if you know the brand IDs manually</small>
+            <small>Type to search for brands by name</small>
+
+            {/* Brand search results */}
+            {brandSearching && <div>Searching...</div>}
+            {brandResults.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                background: 'white',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                marginTop: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                zIndex: 1000,
+                width: 'calc(100% - 40px)'
+              }}>
+                {brandResults.map(brand => (
+                  <div
+                    key={brand.id}
+                    onClick={() => handleSelectBrand(brand)}
+                    style={{
+                      padding: '8px 12px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #eee'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                  >
+                    <strong>{brand.name}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="form-group">

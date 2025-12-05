@@ -18,6 +18,7 @@ from sqlalchemy.orm import sessionmaker
 from backend.config import settings
 
 # Create SQLAlchemy engine
+print(f"DEBUG: Connecting to database at {settings.DATABASE_URL}")
 engine = create_engine(
     settings.DATABASE_URL,
     connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {},

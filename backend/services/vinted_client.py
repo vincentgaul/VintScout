@@ -208,45 +208,50 @@ class VintedClient:
         """
         Search for brands by name.
 
-        TODO: BROKEN BY DESIGN - Vinted API endpoint deprecated/removed.
-
-        As of Dec 2025, Vinted's brand search endpoint (/api/v2/catalog/brands)
-        returns 404 (Not Found). This endpoint has been deprecated or removed
-        by Vinted.
-
-        IMPACT:
-        - Brand autocomplete/search is impossible
-        - Users cannot discover brand IDs through the API
-        - This method ALWAYS returns an empty list
-
-        WORKAROUND:
-        - Users should use text search instead (e.g., "Nike sneakers")
-        - Brand filtering by ID still works IF you know the IDs manually
-
-        PHASE 2 TODO:
-        - Manually curate popular brand IDs (Nike=53, Adidas=14, etc.)
-        - Seed database with top 100-200 brands
-        - Return hardcoded brand list instead of calling Vinted API
+        Uses Vinted's brand search endpoint with keyword parameter.
+        This endpoint provides partial matching - searching "nike" will match "Nike", etc.
 
         Args:
-            query: Brand name to search (e.g., "nike")
-            limit: Maximum results to return
+            query: Brand name to search (e.g., "nike", "thursday")
+            limit: Maximum results to return (default: 20)
 
         Returns:
-            Empty list (brand search endpoint no longer available)
+            List of brand dictionaries with keys:
+                - id: Brand ID (integer)
+                - title: Brand name (string)
+                - slug: URL-friendly brand name
+                - path: Brand page URL path
+                - item_count: Number of items for this brand
+                - favourite_count: Number of users who favorited this brand
 
         Example:
             client = VintedClient("fr")
             brands = client.search_brands("nike")
-            # [] - Brand search not supported by Vinted API
+            # [{"id": 53, "title": "Nike", "slug": "nike", ...}]
         """
-        # TODO: Phase 1 MVP - Always return empty, API is dead
-        logger.warning(
-            f"Brand search requested for '{query}', but Vinted API endpoint "
-            f"/api/v2/catalog/brands is unavailable (404). Returning empty list. "
-            f"Users should use text search instead."
-        )
-        return []
+        try:
+            # Use the /api/v2/brands endpoint with keyword parameter
+            response = self._make_request(
+                "GET",
+                "/api/v2/brands",
+                params={"keyword": query}
+            )
+
+            # Extract brands from response
+            brands = response.get("brands", [])
+
+            logger.info(f"Found {len(brands)} brands for query '{query}'")
+
+            # Limit results
+            return brands[:limit]
+
+        except VintedAPIError as e:
+            logger.error(f"Brand search failed for '{query}': {e}")
+            # Return empty list on error rather than crashing
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error in brand search: {e}")
+            return []
 
     def _normalize_category(self, category: Dict[str, Any]) -> Dict[str, Any]:
         """

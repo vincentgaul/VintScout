@@ -56,3 +56,10 @@ export interface Category {
   parent_id?: string;
   children?: Category[];
 }
+
+export interface Brand {
+  id: string;
+  vinted_id: string;
+  name: string;
+  is_popular: boolean;
+}

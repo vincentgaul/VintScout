@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse, Alert, AlertCreate, ItemHistory, Category } from '../types';
+import type { AuthResponse, Alert, AlertCreate, ItemHistory, Category, Brand } from '../types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -47,3 +47,7 @@ export const getCategories = (countryCode: string) =>
 
 export const searchCategories = (q: string, countryCode: string) =>
   api.get<Category[]>('/categories/search', { params: { q, country_code: countryCode } }).then(res => res.data);
+
+// Brands
+export const searchBrands = (q: string, countryCode: string) =>
+  api.get<Brand[]>('/brands/search', { params: { q, country_code: countryCode } }).then(res => res.data);

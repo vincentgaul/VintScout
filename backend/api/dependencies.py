@@ -69,10 +69,25 @@ def get_current_user(
         HTTPException 404: If user in token doesn't exist in database
     """
     # Check if authentication is disabled (self-hosted mode)
+    # Check if authentication is disabled (self-hosted mode)
     if not settings.REQUIRE_AUTH:
-        # In self-hosted mode, return a mock user or None
-        # For now, we'll require at least one user exists
-        return db.query(User).first()
+        # In self-hosted mode, return the first user or create a default one
+        user = db.query(User).first()
+        if not user:
+            # Create default admin user
+            from passlib.context import CryptContext
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            
+            user = User(
+                email="admin@example.com",
+                hashed_password=pwd_context.hash("admin"),
+                is_active=True,
+                is_verified=True
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+        return user
 
     if not credentials:
         raise HTTPException(

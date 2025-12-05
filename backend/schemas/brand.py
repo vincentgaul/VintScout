@@ -26,7 +26,6 @@ class BrandResponse(BaseModel):
     id: str = Field(..., description="Internal UUID (for database relationships)")
     vinted_id: str = Field(..., description="Vinted's brand ID (used in search API)")
     name: str = Field(..., description="Brand name for display")
-    item_count: Optional[int] = Field(None, description="Number of items available (can be stale)")
     is_popular: bool = Field(..., description="Whether this is a pre-seeded popular brand")
 
     model_config = ConfigDict(
@@ -36,7 +35,6 @@ class BrandResponse(BaseModel):
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "vinted_id": "53",
                 "name": "Nike",
-                "item_count": 125438,
                 "is_popular": True
             }
         }

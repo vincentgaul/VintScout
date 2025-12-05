@@ -1,18 +1,12 @@
 """
-Brand API Routes (CURRENTLY DISABLED - MVP Phase 1)
+Brand API Routes
 
-TODO: Brand search is NOT WORKING in Phase 1 MVP due to Vinted API limitations.
-      Vinted's /api/v2/catalog/brands endpoint returns 404 (deprecated/removed).
-
-      These endpoints return empty results with helpful error messages.
-      Users should use text search instead (e.g., "Nike sneakers").
-
-      Phase 2 TODO: Manually curate 100-200 popular brand IDs and seed database,
-                    then re-enable these endpoints with hardcoded brand list.
+Brand search using Vinted's /api/v2/brands endpoint with keyword parameter.
+Provides partial/fuzzy matching for brand autocomplete.
 
 Endpoints:
-- GET /api/brands/search - Returns empty (brand API unavailable)
-- GET /api/brands/popular - Returns empty (no brands seeded)
+- GET /api/brands/search - Search brands by keyword (e.g., "nike" → "Nike")
+- GET /api/brands/popular - Returns empty (not implemented yet)
 
 Authentication: Optional (works for both authenticated and anonymous users)
 """
@@ -38,44 +32,47 @@ def search_brands(
     db: Session = Depends(get_db)
 ):
     """
-    Search brands by name (CURRENTLY UNAVAILABLE - MVP Phase 1).
+    Search brands by name using Vinted's brand API.
 
-    **IMPORTANT**: Brand search is not available in this version.
-    Vinted's brand search API endpoint has been deprecated/removed (returns 404).
-
-    **Workaround**: Use text search instead!
-    Instead of searching for brand "Nike" and getting ID "53",
-    just type "Nike sneakers" directly in the alert search text field.
-
-    This approach works for 90% of use cases and is simpler for users.
-
-    TODO Phase 2: Manually curate popular brands and seed database.
-                  Then this endpoint will return hardcoded brand list.
+    This endpoint provides partial/fuzzy matching - searching "nike" will match "Nike",
+    "thursday" will match "Thursday Boot Company", etc.
 
     Query parameters:
-        - q: Search query (e.g., "nike")
+        - q: Search query (e.g., "nike", "thursday")
         - country_code: 2-letter country code (e.g., "fr")
         - limit: Maximum results to return (default: 20, max: 100)
 
     Response:
-        Empty array (brand search unavailable)
+        List of brand objects with id, title, and other metadata
 
     Example:
         GET /api/brands/search?q=nike&country_code=fr&limit=10
-        Returns: []
+        Returns: [{"id": 53, "title": "Nike", ...}]
     """
-    # TODO: Phase 1 MVP - Brand search is broken by design (Vinted API deprecated)
-    # Always return empty array without querying database or calling API
-    # Frontend should detect empty response and show helpful message
-
     import logging
-    logger = logging.getLogger(__name__)
-    logger.warning(
-        f"Brand search requested for '{q}' in {country_code}, "
-        f"but brand API is unavailable. Returning empty list."
-    )
 
-    return []  # Always empty - brand search not available
+    logger = logging.getLogger(__name__)
+    logger.info(f"Brand search requested: '{q}'")
+
+    try:
+        # Search brands from database (brand IDs are universal across countries)
+        brands = Brand.search_query(db, q, limit=limit)
+
+        # Convert to response schema
+        return [
+            BrandResponse(
+                id=brand.id,
+                vinted_id=brand.vinted_id,
+                name=brand.name,
+                is_popular=brand.is_popular
+            )
+            for brand in brands
+        ]
+
+    except Exception as e:
+        logger.error(f"Brand search failed: {e}")
+        # Return empty list on error rather than crashing
+        return []
 
 
 @router.get("/popular", response_model=List[BrandResponse])

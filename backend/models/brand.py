@@ -41,24 +41,20 @@ class Brand(Base):
 
     # Brand information
     name = Column(String(255), nullable=False, index=True)  # e.g., "Nike"
-    country_code = Column(String(2), nullable=False, index=True)  # e.g., "fr"
-
-    # Metadata from Vinted
-    item_count = Column(Integer, nullable=True)  # Number of items for this brand
     is_popular = Column(Boolean, default=False, nullable=False)  # Pre-seeded popular brand
 
     # Cache management
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
-    # Composite index for fast lookups: search by name within a country
+    # Index for fast name lookups
     __table_args__ = (
-        Index('idx_brand_country_name', 'country_code', 'name'),
-        Index('idx_brand_country_vinted_id', 'country_code', 'vinted_id'),
+        Index('idx_brand_name', 'name'),
+        Index('idx_brand_vinted_id', 'vinted_id'),
     )
 
     def __repr__(self):
-        return f"<Brand {self.name} ({self.country_code}) - ID:{self.vinted_id}>"
+        return f"<Brand {self.name} - ID:{self.vinted_id}>"
 
     def is_stale(self, ttl_days=30):
         """
@@ -76,22 +72,23 @@ class Brand(Base):
         return age > timedelta(days=ttl_days)
 
     @classmethod
-    def search_query(cls, session, query, country_code, limit=10):
+    def search_query(cls, session, query, country_code=None, limit=10):
         """
         Search brands by name prefix (for autocomplete).
+
+        Brand IDs are universal across all countries, so country_code is ignored.
 
         Args:
             session: Database session
             query: Search string (e.g., "nik")
-            country_code: Country code (e.g., "fr")
+            country_code: Ignored (kept for API compatibility)
             limit: Max results to return
 
         Returns:
             List of Brand objects matching the query
         """
         return session.query(cls)\
-            .filter(cls.country_code == country_code)\
             .filter(cls.name.ilike(f"{query}%"))\
-            .order_by(cls.is_popular.desc(), cls.item_count.desc())\
+            .order_by(cls.is_popular.desc(), cls.name.asc())\
             .limit(limit)\
             .all()
