@@ -31,10 +31,28 @@ export default function AlertCard({
       )}
       <p><strong>Country:</strong> {alert.country_code.toUpperCase()}</p>
       {alert.search_text && <p><strong>Search:</strong> {alert.search_text}</p>}
-      {alert.catalog_ids && <p><strong>Category IDs:</strong> {alert.catalog_ids}</p>}
-      {alert.catalog_names && <p><strong>Categories:</strong> {alert.catalog_names}</p>}
-      {alert.brand_ids && <p><strong>Brand IDs:</strong> {alert.brand_ids}</p>}
-      {alert.brand_names && <p><strong>Brands:</strong> {alert.brand_names}</p>}
+      {alert.catalog_names && (
+        <p>
+          <strong>Categories:</strong>{' '}
+          {alert.catalog_ids
+            ? alert.catalog_names.split(', ').map((name: string, i: number) => {
+              const id = alert.catalog_ids?.split(',')[i];
+              return id ? `${name} (${id})` : name;
+            }).join(', ')
+            : alert.catalog_names}
+        </p>
+      )}
+      {alert.brand_names && (
+        <p>
+          <strong>Brands:</strong>{' '}
+          {alert.brand_ids
+            ? alert.brand_names.split(', ').map((name: string, i: number) => {
+              const id = alert.brand_ids?.split(',')[i];
+              return id ? `${name} (${id})` : name;
+            }).join(', ')
+            : alert.brand_names}
+        </p>
+      )}
       {alert.price_min !== undefined && alert.price_max !== undefined && (
         <p><strong>Price Range:</strong> €{alert.price_min} - €{alert.price_max}</p>
       )}

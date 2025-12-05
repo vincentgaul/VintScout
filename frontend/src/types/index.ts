@@ -16,6 +16,7 @@ export interface Alert {
   brand_ids?: string;
   brand_names?: string;
   catalog_ids?: string;
+  catalog_names?: string;
   price_min?: number;
   price_max?: number;
   check_interval_minutes: number;
