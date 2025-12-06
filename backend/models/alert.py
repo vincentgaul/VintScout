@@ -99,3 +99,8 @@ class Alert(Base):
     def catalog_list(self):
         """Convert comma-separated catalog_ids to list"""
         return [c.strip() for c in self.catalog_ids.split(",")] if self.catalog_ids else []
+
+    @property
+    def size_list(self):
+        """Convert comma-separated sizes to list"""
+        return [s.strip() for s in self.sizes.split(",")] if self.sizes else []

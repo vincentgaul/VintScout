@@ -70,7 +70,8 @@ from backend.api.routes import (
     alerts_router,
     brands_router,
     categories_router,
-    history_router
+    history_router,
+    sizes_router
 )
 
 # Register API routers
@@ -79,6 +80,7 @@ app.include_router(alerts_router, prefix="/api")
 app.include_router(brands_router, prefix="/api")
 app.include_router(categories_router, prefix="/api")
 app.include_router(history_router, prefix="/api")
+app.include_router(sizes_router, prefix="/api")
 
 @app.get("/")
 def root():

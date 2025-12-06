@@ -14,7 +14,7 @@ import {
   FaFile
 } from 'react-icons/fa';
 import * as api from '../services/api';
-import type { AlertCreate, Brand, Category } from '../types';
+import type { AlertCreate, Brand, Category, Size } from '../types';
 
 // Helper to transform Category[] to CheckboxTree nodes
 const transformCategoriesToNodes = (categories: Category[]): any[] => {
@@ -67,6 +67,11 @@ export default function CreateAlertPage() {
   const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
+  // Size state
+  const [availableSizes, setAvailableSizes] = useState<Size[]>([]);
+  const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
+  const [loadingSizes, setLoadingSizes] = useState(false);
+
   // Fetch category tree when country changes
   useEffect(() => {
     const fetchCategories = async () => {
@@ -103,6 +108,40 @@ export default function CreateAlertPage() {
     }));
   }, [checkedCategories, treeCategories]);
 
+  // Fetch available sizes when categories change
+  useEffect(() => {
+    const fetchSizes = async () => {
+      if (!formData.catalog_ids || !formData.catalog_names) {
+        setAvailableSizes([]);
+        setSelectedSizes([]);
+        return;
+      }
+
+      setLoadingSizes(true);
+      try {
+        const sizes = await api.getSizes(formData.catalog_ids, formData.catalog_names);
+        setAvailableSizes(sizes);
+        // Clear selected sizes if they're not in the new available sizes
+        setSelectedSizes(prev => prev.filter(s => sizes.some(size => size.id === s.id)));
+      } catch (error) {
+        console.error('Failed to fetch sizes:', error);
+        setAvailableSizes([]);
+      } finally {
+        setLoadingSizes(false);
+      }
+    };
+
+    fetchSizes();
+  }, [formData.catalog_ids, formData.catalog_names]);
+
+  // Update formData when selected sizes change
+  useEffect(() => {
+    const sizeIds = selectedSizes.map(s => s.id).join(',');
+    setFormData(prev => ({
+      ...prev,
+      sizes: sizeIds || undefined
+    }));
+  }, [selectedSizes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -375,6 +414,73 @@ export default function CreateAlertPage() {
               </div>
             )}
           </div>
+
+          {/* Size selection (shows when categories are selected) */}
+          {availableSizes.length > 0 && (
+            <div className="form-group">
+              <label>Sizes (Optional)</label>
+
+              {loadingSizes && <div style={{ marginBottom: '10px' }}>Loading sizes...</div>}
+
+              {/* Selected sizes */}
+              {selectedSizes.length > 0 && (
+                <div style={{ marginBottom: '10px' }}>
+                  {selectedSizes.map(size => (
+                    <span
+                      key={size.id}
+                      style={{
+                        display: 'inline-block',
+                        background: '#e0e0e0',
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        marginRight: '8px',
+                        marginBottom: '8px'
+                      }}
+                    >
+                      {size.name} (ID: {size.id})
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSizes(prev => prev.filter(s => s.id !== size.id))}
+                        style={{
+                          marginLeft: '8px',
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          padding: 0,
+                          color: '#666'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Size selection dropdown */}
+              <select
+                value=""
+                onChange={(e) => {
+                  const sizeId = e.target.value;
+                  const size = availableSizes.find(s => s.id === sizeId);
+                  if (size && !selectedSizes.find(s => s.id === size.id)) {
+                    setSelectedSizes(prev => [...prev, size]);
+                  }
+                }}
+                disabled={loadingSizes}
+              >
+                <option value="">Select a size...</option>
+                {availableSizes
+                  .filter(size => !selectedSizes.find(s => s.id === size.id))
+                  .map(size => (
+                    <option key={size.id} value={size.id}>
+                      {size.name}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
+          )}
 
           <div className="form-group">
             <label>Check Interval (minutes) *</label>

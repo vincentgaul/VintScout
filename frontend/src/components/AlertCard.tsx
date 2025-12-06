@@ -53,6 +53,12 @@ export default function AlertCard({
             : alert.brand_names}
         </p>
       )}
+      {alert.sizes && (
+        <p>
+          <strong>Sizes:</strong>{' '}
+          {alert.sizes.split(',').map((sizeId: string) => sizeId.trim()).join(', ')}
+        </p>
+      )}
       {alert.price_min !== undefined && alert.price_max !== undefined && (
         <p><strong>Price Range:</strong> €{alert.price_min} - €{alert.price_max}</p>
       )}

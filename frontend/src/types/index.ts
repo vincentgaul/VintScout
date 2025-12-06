@@ -17,6 +17,7 @@ export interface Alert {
   brand_names?: string;
   catalog_ids?: string;
   catalog_names?: string;
+  sizes?: string;
   price_min?: number;
   price_max?: number;
   check_interval_minutes: number;
@@ -36,6 +37,8 @@ export interface AlertCreate {
   brand_ids?: string;
   brand_names?: string;
   catalog_ids?: string;
+  catalog_names?: string;
+  sizes?: string;
   price_min?: number;
   price_max?: number;
   check_interval_minutes: number;
@@ -64,5 +67,10 @@ export interface Category {
 export interface Brand {
   id: string;
   vinted_id: string;
+  name: string;
+}
+
+export interface Size {
+  id: string;
   name: string;
 }

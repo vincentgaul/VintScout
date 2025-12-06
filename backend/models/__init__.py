@@ -18,6 +18,7 @@ from backend.models.alert import Alert
 from backend.models.brand import Brand
 from backend.models.category import Category
 from backend.models.item_history import ItemHistory
+from backend.models.size import Size
 
 # Export all models for easy importing elsewhere
 __all__ = [
@@ -26,5 +27,6 @@ __all__ = [
     "Alert",
     "Brand",
     "Category",
-    "ItemHistory"
+    "ItemHistory",
+    "Size"
 ]

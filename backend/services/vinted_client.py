@@ -311,6 +311,7 @@ class VintedClient:
         search_text: Optional[str] = None,
         brand_ids: Optional[List[str]] = None,
         catalog_ids: Optional[List[str]] = None,
+        size_ids: Optional[List[str]] = None,
         price_from: Optional[float] = None,
         price_to: Optional[float] = None,
         currency: str = "EUR",
@@ -325,6 +326,7 @@ class VintedClient:
             search_text: Free-text search query
             brand_ids: List of brand IDs to filter
             catalog_ids: List of category IDs to filter
+            size_ids: List of size IDs to filter
             price_from: Minimum price
             price_to: Maximum price
             currency: Currency code (EUR, USD, etc.)
@@ -362,6 +364,9 @@ class VintedClient:
 
         if catalog_ids:
             params["catalog_ids[]"] = catalog_ids
+
+        if size_ids:
+            params["size_ids[]"] = size_ids
 
         if price_from is not None:
             params["price_from"] = price_from

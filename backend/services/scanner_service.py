@@ -89,6 +89,7 @@ class ScannerService:
             # Build search parameters from alert
             brand_ids = alert.brand_list if alert.brand_ids else None
             catalog_ids = alert.catalog_list if alert.catalog_ids else None
+            size_ids = alert.size_list if alert.sizes else None
 
             # Search Vinted
             with VintedClient(alert.country_code) as client:
@@ -96,6 +97,7 @@ class ScannerService:
                     search_text=alert.search_text,
                     brand_ids=brand_ids,
                     catalog_ids=catalog_ids,
+                    size_ids=size_ids,
                     price_from=alert.price_min,
                     price_to=alert.price_max,
                     currency=alert.currency,
