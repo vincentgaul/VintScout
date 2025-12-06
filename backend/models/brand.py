@@ -41,7 +41,6 @@ class Brand(Base):
 
     # Brand information
     name = Column(String(255), nullable=False, index=True)  # e.g., "Nike"
-    is_popular = Column(Boolean, default=False, nullable=False)  # Pre-seeded popular brand
 
     # Cache management
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
@@ -89,6 +88,6 @@ class Brand(Base):
         """
         return session.query(cls)\
             .filter(cls.name.ilike(f"{query}%"))\
-            .order_by(cls.is_popular.desc(), cls.name.asc())\
+            .order_by(cls.name.asc())\
             .limit(limit)\
             .all()

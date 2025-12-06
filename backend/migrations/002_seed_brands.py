@@ -15,7 +15,7 @@ def migrate():
     # Paths
     script_dir = Path(__file__).parent
     brands_sql = script_dir.parent.parent / "brands.sql"
-    db_path = script_dir.parent.parent / "data" / "vinted.db"
+    db_path = script_dir.parent / "data" / "vinted.db"
 
     print(f"Reading brands from: {brands_sql}")
     print(f"Database: {db_path}")
@@ -45,7 +45,6 @@ def migrate():
                 id TEXT PRIMARY KEY,
                 vinted_id TEXT NOT NULL,
                 name TEXT NOT NULL,
-                is_popular INTEGER NOT NULL DEFAULT 0,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
@@ -66,16 +65,13 @@ def migrate():
             import uuid
             brand_id = str(uuid.uuid4())
 
-            # Mark top brands as popular (by lowest ID number = older/more established)
-            is_popular = 1 if int(vinted_id) < 100000 else 0
-
             from datetime import datetime
             now = datetime.utcnow().isoformat()
 
             cursor.execute("""
-                INSERT INTO brands (id, vinted_id, name, is_popular, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (brand_id, vinted_id, name, is_popular, now, now))
+                INSERT INTO brands (id, vinted_id, name, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?)
+            """, (brand_id, vinted_id, name, now, now))
 
             import_count += 1
 
@@ -85,15 +81,10 @@ def migrate():
         conn.commit()
         print(f"✓ Successfully imported {import_count} brands")
 
-        # Show some stats
+        # Show stats
         cursor.execute("SELECT COUNT(*) FROM brands")
         total = cursor.fetchone()[0]
-
-        cursor.execute("SELECT COUNT(*) FROM brands WHERE is_popular = 1")
-        popular = cursor.fetchone()[0]
-
         print(f"Total brands: {total}")
-        print(f"Popular brands: {popular}")
 
     except Exception as e:
         conn.rollback()

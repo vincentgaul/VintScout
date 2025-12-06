@@ -37,7 +37,7 @@ export default function AlertCard({
           {alert.catalog_ids
             ? alert.catalog_names.split(', ').map((name: string, i: number) => {
               const id = alert.catalog_ids?.split(',')[i];
-              return id ? `${name} (${id})` : name;
+              return id ? `${name} (ID: ${id})` : name;
             }).join(', ')
             : alert.catalog_names}
         </p>
@@ -48,7 +48,7 @@ export default function AlertCard({
           {alert.brand_ids
             ? alert.brand_names.split(', ').map((name: string, i: number) => {
               const id = alert.brand_ids?.split(',')[i];
-              return id ? `${name} (${id})` : name;
+              return id ? `${name} (ID: ${id})` : name;
             }).join(', ')
             : alert.brand_names}
         </p>

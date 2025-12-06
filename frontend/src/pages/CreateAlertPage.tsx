@@ -20,7 +20,7 @@ import type { AlertCreate, Brand, Category } from '../types';
 const transformCategoriesToNodes = (categories: Category[]): any[] => {
   return categories.map(cat => ({
     value: cat.id,
-    label: `${cat.name} (${cat.vinted_id})`,
+    label: `${cat.name} (ID: ${cat.vinted_id})`,
     children: cat.children && cat.children.length > 0
       ? transformCategoriesToNodes(cat.children)
       : undefined
@@ -315,7 +315,7 @@ export default function CreateAlertPage() {
                       marginBottom: '8px'
                     }}
                   >
-                    {brand.name} ({brand.vinted_id})
+                    {brand.name} (ID: {brand.vinted_id})
                     <button
                       type="button"
                       onClick={() => handleRemoveBrand(brand.id)}
@@ -369,7 +369,7 @@ export default function CreateAlertPage() {
                     onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
                     onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
                   >
-                    <strong>{brand.name} ({brand.vinted_id})</strong>
+                    <strong>{brand.name} (ID: {brand.vinted_id})</strong>
                   </div>
                 ))}
               </div>

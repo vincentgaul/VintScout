@@ -10,7 +10,7 @@ from datetime import datetime
 def migrate():
     # Paths
     script_dir = Path(__file__).parent
-    db_path = script_dir.parent.parent / "backend" / "data" / "vinted.db"
+    db_path = script_dir.parent / "data" / "vinted.db"
 
     print(f"Database: {db_path}")
 
@@ -35,11 +35,11 @@ def migrate():
             else:
                 brand_id = str(uuid.uuid4())
                 now = datetime.utcnow().isoformat()
-                
+
                 cursor.execute("""
-                    INSERT INTO brands (id, vinted_id, name, is_popular, created_at, updated_at)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                """, (brand_id, brand["vinted_id"], brand["name"], 1, now, now))
+                    INSERT INTO brands (id, vinted_id, name, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (brand_id, brand["vinted_id"], brand["name"], now, now))
                 
                 print(f"Added brand: {brand['name']} ({brand['vinted_id']})")
                 count += 1

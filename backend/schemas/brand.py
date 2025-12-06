@@ -26,7 +26,6 @@ class BrandResponse(BaseModel):
     id: str = Field(..., description="Internal UUID (for database relationships)")
     vinted_id: str = Field(..., description="Vinted's brand ID (used in search API)")
     name: str = Field(..., description="Brand name for display")
-    is_popular: bool = Field(..., description="Whether this is a pre-seeded popular brand")
 
     model_config = ConfigDict(
         from_attributes=True,  # Allows converting SQLAlchemy models to Pydantic
@@ -34,8 +33,7 @@ class BrandResponse(BaseModel):
             "example": {
                 "id": "550e8400-e29b-41d4-a716-446655440000",
                 "vinted_id": "53",
-                "name": "Nike",
-                "is_popular": True
+                "name": "Nike"
             }
         }
     )
