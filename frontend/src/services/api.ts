@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse, Alert, AlertCreate, ItemHistory, Category, Brand } from '../types';
+import type { AuthResponse, Alert, AlertCreate, ItemHistory, Category, Brand, User } from '../types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -20,6 +20,9 @@ export const register = (email: string, password: string) =>
 
 export const login = (email: string, password: string) =>
   api.post<AuthResponse>('/auth/login', { email, password }).then(res => res.data);
+
+export const getCurrentUser = () =>
+  api.get<User>('/auth/me').then(res => res.data);
 
 // Alerts
 export const getAlerts = () =>
