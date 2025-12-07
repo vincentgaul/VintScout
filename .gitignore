@@ -21,11 +21,18 @@ env/
 *.swo
 *~
 
-# Database
+# Database files (contains user data - NEVER commit actual database)
 *.db
 *.sqlite
 *.sqlite3
-backend/data/
+
+# Ignore everything in backend/data/ by default (user databases, logs, etc.)
+backend/data/*
+
+# BUT allow the template database (seed data only, no user data)
+!backend/data/vinted.db.template
+
+# Ignore SQL files (could be database dumps with sensitive data)
 *.sql
 
 # Logs
