@@ -53,6 +53,9 @@ export interface ItemHistory {
   title: string;
   url: string;
   image_url?: string;
+  brand_name?: string;
+  size?: string;
+  condition?: string;
   price: number;
   found_at: string;
 }

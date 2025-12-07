@@ -151,16 +151,16 @@ nav a:hover {
 
 /* Item thumbnail styles */
 .item-thumbnail {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   object-fit: cover;
   border-radius: 8px;
   flex-shrink: 0;
 }
 
 .item-thumbnail-placeholder {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   background-color: #f0f0f0;
   border-radius: 8px;
   display: flex;
@@ -175,8 +175,8 @@ nav a:hover {
 @media (max-width: 600px) {
   .item-thumbnail,
   .item-thumbnail-placeholder {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
   }
 
   .item-card {

@@ -84,6 +84,9 @@ export default function AlertDetailPage() {
                   {/* Item details */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h4 style={{ marginTop: 0 }}>{item.title}</h4>
+                    {item.brand_name && <p><strong>Brand:</strong> {item.brand_name}</p>}
+                    {item.size && <p><strong>Size:</strong> {item.size}</p>}
+                    {item.condition && <p><strong>Condition:</strong> {item.condition}</p>}
                     <p><strong>Price:</strong> €{item.price.toFixed(2)}</p>
                     <p><strong>Found:</strong> {new Date(item.found_at).toLocaleString()}</p>
                     <p>
