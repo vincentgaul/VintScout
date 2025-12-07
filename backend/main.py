@@ -82,14 +82,6 @@ app.include_router(categories_router, prefix="/api")
 app.include_router(history_router, prefix="/api")
 app.include_router(sizes_router, prefix="/api")
 
-@app.get("/")
-def root():
-    return {
-        "message": "VintScout API",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
-
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
@@ -99,3 +91,12 @@ if settings.DEPLOYMENT_MODE == "self-hosted":
     frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
     if os.path.exists(frontend_dist):
         app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+else:
+    # In cloud mode, show API info at root
+    @app.get("/")
+    def root():
+        return {
+            "message": "VintScout API",
+            "version": "1.0.0",
+            "docs": "/docs"
+        }
