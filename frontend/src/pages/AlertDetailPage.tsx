@@ -53,7 +53,7 @@ export default function AlertDetailPage() {
     <div>
       <Link to="/alerts">← Back to Alerts</Link>
 
-      <AlertCard alert={alert} itemsCount={items.length} />
+      <AlertCard alert={alert} itemsCount={alert.total_found_count} />
 
       <h2>Found Items</h2>
 
