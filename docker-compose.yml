@@ -13,7 +13,7 @@ services:
       # Application Settings
       - DEPLOYMENT_MODE=self-hosted
       - DEBUG=False
-      - DATABASE_URL=sqlite:///./backend/data/vinted.db
+      - DATABASE_URL=sqlite:////app/backend/data/vinted.db
 
       # Authentication
       - REQUIRE_AUTH=false
