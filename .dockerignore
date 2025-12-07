@@ -56,11 +56,11 @@ Thumbs.db
 .env.local
 .env.*.local
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-data/
+# Database (exclude all except template)
+backend/data/*.db
+backend/data/*.sqlite
+backend/data/*.sqlite3
+!backend/data/vinted.db.template
 
 # Documentation
 *.md
