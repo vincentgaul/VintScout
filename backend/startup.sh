@@ -44,7 +44,7 @@ sys.path.insert(0, '/app')
 
 from backend.database import SessionLocal
 from backend.models import User
-from backend.auth import get_password_hash
+from backend.api.routes.auth import hash_password
 
 db = SessionLocal()
 
@@ -60,9 +60,8 @@ try:
 
         # Create admin user
         admin = User(
-            id=str(uuid.uuid4()),
             email=admin_email,
-            hashed_password=get_password_hash(admin_password)
+            hashed_password=hash_password(admin_password)
         )
         db.add(admin)
         db.commit()
