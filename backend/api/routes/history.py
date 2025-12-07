@@ -28,17 +28,19 @@ router = APIRouter(tags=["Item History"])
 def get_all_history(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
+    alert_id: str = Query(default=None, description="Filter by specific alert ID"),
     limit: int = Query(default=50, ge=1, le=200, description="Max results per page"),
     offset: int = Query(default=0, ge=0, description="Number of results to skip"),
     notified_only: bool = Query(default=False, description="Only show items that were notified")
 ):
     """
-    Get all found items across all user's alerts.
+    Get all found items across all user's alerts, or for a specific alert.
 
     Returns items sorted by found_at timestamp (newest first).
     Supports pagination and filtering.
 
     Query parameters:
+        - alert_id: Optional alert ID to filter results to a specific alert
         - limit: Maximum results to return (default: 50, max: 200)
         - offset: Number of results to skip for pagination (default: 0)
         - notified_only: If true, only show items where notification was sent (default: false)
@@ -66,17 +68,32 @@ def get_all_history(
 
     Example:
         GET /api/history?limit=20&offset=0&notified_only=false
+        GET /api/history?alert_id=660e8400-...&limit=20&offset=0
 
     Raises:
         401 Unauthorized: If no valid JWT token provided
+        404 Not Found: If alert_id specified but doesn't exist or doesn't belong to user
     """
     # Get all alert IDs for this user
     user_alert_ids = db.query(Alert.id).filter(Alert.user_id == user.id).all()
-    user_alert_ids = [alert_id for (alert_id,) in user_alert_ids]
+    user_alert_ids = [alert_id_tuple for (alert_id_tuple,) in user_alert_ids]
+
+    # If alert_id specified, verify it belongs to user
+    if alert_id:
+        if alert_id not in user_alert_ids:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Alert not found"
+            )
+        # Filter to just this alert
+        filter_alert_ids = [alert_id]
+    else:
+        # Show all user's alerts
+        filter_alert_ids = user_alert_ids
 
     # Query item history for user's alerts (exclude baseline items)
     query = db.query(ItemHistory)\
-        .filter(ItemHistory.alert_id.in_(user_alert_ids))\
+        .filter(ItemHistory.alert_id.in_(filter_alert_ids))\
         .filter(ItemHistory.is_baseline == False)
 
     if notified_only:
