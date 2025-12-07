@@ -10,30 +10,33 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # Application Settings
       - DEPLOYMENT_MODE=self-hosted
-      - DATABASE_URL=sqlite:///./data/vinted.db
+      - DEBUG=False
+      - DATABASE_URL=sqlite:///./backend/data/vinted.db
+
+      # Authentication
+      - REQUIRE_AUTH=false
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+      # Default Admin User (first run only)
+      - DEFAULT_ADMIN_EMAIL=${DEFAULT_ADMIN_EMAIL:-admin@example.com}
+      - DEFAULT_ADMIN_PASSWORD=${DEFAULT_ADMIN_PASSWORD:-admin}
+
+      # CORS
       - CORS_ORIGINS=["http://localhost:3000"]
 
-      # Email notifications (optional)
-      - SMTP_HOST=${SMTP_HOST:-}
-      - SMTP_PORT=${SMTP_PORT:-587}
-      - SMTP_USER=${SMTP_USER:-}
-      - SMTP_PASSWORD=${SMTP_PASSWORD:-}
-
-      # Slack notifications (optional)
-      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL:-}
-
-      # Telegram notifications (optional)
+      # Telegram Notifications (optional)
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
 
-      # Brand/Category settings
-      - BRAND_CACHE_TTL_DAYS=${BRAND_CACHE_TTL_DAYS:-30}
-      - SEED_POPULAR_BRANDS_ON_STARTUP=${SEED_POPULAR_BRANDS_ON_STARTUP:-true}
+      # Vinted API
+      - VINTED_API_TIMEOUT=30
 
     volumes:
-      - ./data:/app/data  # Persist SQLite database
+      - vintedscanner-data:/app/backend/data  # Persist SQLite database and user data
 
     restart: unless-stopped
 
@@ -45,4 +48,4 @@ services:
       start_period: 40s
 
 volumes:
-  data:
+  vintedscanner-data:

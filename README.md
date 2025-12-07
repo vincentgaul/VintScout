@@ -46,7 +46,64 @@ Monitor Vinted marketplaces in 20+ countries:
 - Docker & Docker Compose (recommended)
 - OR Python 3.11+ and Node.js 18+ for local development
 
-### Self-Hosted Deployment (Docker)
+### Option 1: Use Pre-Built Docker Image (Easiest)
+
+**Pull and run the latest image from Docker Hub:**
+
+```bash
+# Pull the latest image
+docker pull yourusername/vintedscanner-web:latest
+
+# Create a directory for data persistence
+mkdir -p vintedscanner-data
+
+# Run the container
+docker run -d \
+  --name vintedscanner \
+  -p 3000:3000 \
+  -v vintedscanner-data:/app/backend/data \
+  -e JWT_SECRET=$(openssl rand -hex 32) \
+  -e TELEGRAM_BOT_TOKEN=your-bot-token \
+  -e TELEGRAM_CHAT_ID=your-chat-id \
+  yourusername/vintedscanner-web:latest
+```
+
+Access the application:
+- Web interface: http://localhost:3000
+- Default login: `admin@example.com` / `admin`
+- API docs: http://localhost:3000/docs
+
+**Using docker-compose with pre-built image:**
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  vintedscanner:
+    image: yourusername/vintedscanner-web:latest
+    container_name: vintedscanner-web
+    ports:
+      - "3000:3000"
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+    volumes:
+      - vintedscanner-data:/app/backend/data
+    restart: unless-stopped
+
+volumes:
+  vintedscanner-data:
+```
+
+Then run:
+```bash
+docker-compose up -d
+```
+
+### Option 2: Build From Source
 
 1. Clone the repository:
 ```bash

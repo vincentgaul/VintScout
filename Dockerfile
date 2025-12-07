@@ -48,18 +48,17 @@ COPY backend/requirements.txt ./backend/
 # Install Python dependencies
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# Copy backend source
+# Copy backend source (excluding data directory)
 COPY backend/ ./backend/
 
 # Copy frontend build from previous stage
 COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 
-# Copy startup script
-COPY startup.sh ./
-RUN chmod +x startup.sh
+# Make startup script executable
+RUN chmod +x /app/backend/startup.sh
 
-# Create data directory for SQLite
-RUN mkdir -p /app/data
+# Create data directory for SQLite (user data will go here)
+RUN mkdir -p /app/backend/data
 
 # Expose port
 EXPOSE 3000
@@ -69,4 +68,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD python -c "import requests; requests.get('http://localhost:3000/health')"
 
 # Run startup script
-CMD ["./startup.sh"]
+CMD ["/app/backend/startup.sh"]
