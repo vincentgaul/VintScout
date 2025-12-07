@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Alert } from '../types';
 
 interface AlertCardProps {
@@ -17,6 +18,8 @@ export default function AlertCard({
   onDelete,
   onViewItems
 }: AlertCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const getStatusText = () => {
     if (!alert.is_active) return '❌ Inactive';
     if (!alert.last_checked_at) return '✅ Active (Creating Baseline)';
@@ -25,11 +28,37 @@ export default function AlertCard({
 
   return (
     <div className="card">
-      <p><strong>Alert Name:</strong> {alert.name}</p>
-      {itemsCount !== undefined && (
-        <p><strong>Items Found:</strong> {itemsCount}</p>
-      )}
-      <p><strong>Country:</strong> {alert.country_code.toUpperCase()}</p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+        <div style={{ flex: 1 }}>
+          <p style={{ margin: 0 }}><strong>Alert Name:</strong> {alert.name}</p>
+          {itemsCount !== undefined && (
+            <p style={{ margin: '5px 0 0 0' }}><strong>Items Found:</strong> {itemsCount}</p>
+          )}
+          <p style={{ margin: '5px 0 0 0' }}><strong>Check Interval:</strong> {alert.check_interval_minutes} minutes</p>
+          <p style={{ margin: '5px 0 0 0' }}><strong>Status:</strong> {getStatusText()}</p>
+          <p style={{ margin: '5px 0 0 0' }}>
+            <strong>Last Checked:</strong>{' '}
+            {alert.last_checked_at ? new Date(alert.last_checked_at).toLocaleString() : '-'}
+          </p>
+        </div>
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{
+            background: '#f0f0f0',
+            color: '#333',
+            padding: '6px 12px',
+            fontSize: '12px',
+            border: '1px solid #ddd',
+            flexShrink: 0
+          }}
+        >
+          {isExpanded ? '▼ Hide Details' : '▶ Show Details'}
+        </button>
+      </div>
+
+      {isExpanded && (
+        <>
+          <p><strong>Country:</strong> {alert.country_code.toUpperCase()}</p>
       {alert.search_text && <p><strong>Search:</strong> {alert.search_text}</p>}
       {alert.catalog_names && (
         <p>
@@ -62,12 +91,8 @@ export default function AlertCard({
       {alert.price_min !== undefined && alert.price_max !== undefined && (
         <p><strong>Price Range:</strong> €{alert.price_min} - €{alert.price_max}</p>
       )}
-      <p><strong>Check Interval:</strong> {alert.check_interval_minutes} minutes</p>
-      <p><strong>Status:</strong> {getStatusText()}</p>
-      <p>
-        <strong>Last Checked:</strong>{' '}
-        {alert.last_checked_at ? new Date(alert.last_checked_at).toLocaleString() : '-'}
-      </p>
+        </>
+      )}
 
       {showActions && (
         <div className="actions">
