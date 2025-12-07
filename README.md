@@ -30,6 +30,49 @@ A self-hosted web application for monitoring Vinted marketplaces. Create custom 
 
 The application includes a pre-seeded database with popular brands and categories. Your data persists in a Docker volume.
 
+### Unraid / Docker CLI
+
+For Unraid or other Docker-based systems, first build or pull the image, then run:
+
+```bash
+# Option 1: Pull from Docker Hub (once published)
+docker pull yourusername/vintscout:latest
+
+# Option 2: Build locally
+git clone https://github.com/yourusername/vintscout.git
+cd vintscout
+docker build -t vintscout:latest .
+```
+
+Then run the container:
+
+```bash
+docker run -d \
+  --name=vintscout \
+  -p 3000:3000 \
+  -v /mnt/user/appdata/vintscout:/app/backend/data \
+  -e DEPLOYMENT_MODE=self-hosted \
+  -e DATABASE_URL=sqlite:////app/backend/data/vinted.db \
+  -e TELEGRAM_BOT_TOKEN=your-bot-token \
+  -e TELEGRAM_CHAT_ID=your-chat-id \
+  -e JWT_SECRET=your-secret-here \
+  --restart unless-stopped \
+  vintscout:latest
+```
+
+**Unraid Web UI Configuration:**
+- **Repository:** `yourusername/vintscout:latest`
+- **Port:** `3000` (container) → `3000` (host)
+- **Path:** `/app/backend/data` (container) → `/mnt/user/appdata/vintscout` (host)
+- **Environment Variables:**
+  - `DEPLOYMENT_MODE=self-hosted`
+  - `DATABASE_URL=sqlite:////app/backend/data/vinted.db`
+  - `TELEGRAM_BOT_TOKEN=` (your bot token)
+  - `TELEGRAM_CHAT_ID=` (your chat ID)
+  - `JWT_SECRET=` (generate with `openssl rand -hex 32`)
+
+Your database file will be accessible at `/mnt/user/appdata/vintscout/vinted.db` on your Unraid server.
+
 ## Configuration
 
 Environment variables can be configured via `.env` file. Copy `.env.example` to get started:

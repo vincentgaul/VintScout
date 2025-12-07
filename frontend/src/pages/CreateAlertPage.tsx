@@ -14,7 +14,7 @@ import {
   FaFile
 } from 'react-icons/fa';
 import * as api from '../services/api';
-import type { AlertCreate, Brand, Category, Size } from '../types';
+import type { AlertCreate, Brand, Category } from '../types';
 
 // Helper to transform Category[] to CheckboxTree nodes
 const transformCategoriesToNodes = (categories: Category[]): any[] => {
@@ -67,11 +67,6 @@ export default function CreateAlertPage() {
   const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-  // Size state
-  const [availableSizes, setAvailableSizes] = useState<Size[]>([]);
-  const [selectedSizes, setSelectedSizes] = useState<Size[]>([]);
-  const [loadingSizes, setLoadingSizes] = useState(false);
-
   // Fetch category tree when country changes
   useEffect(() => {
     const fetchCategories = async () => {
@@ -108,8 +103,9 @@ export default function CreateAlertPage() {
     }));
   }, [checkedCategories, treeCategories]);
 
-  // Fetch available sizes when categories change
-  useEffect(() => {
+  // TEMPORARILY DISABLED - Fetch available sizes when categories change
+  // Re-enable when size gender context issue is resolved
+  /* useEffect(() => {
     const fetchSizes = async () => {
       if (!formData.catalog_ids || !formData.catalog_names) {
         setAvailableSizes([]);
@@ -132,16 +128,16 @@ export default function CreateAlertPage() {
     };
 
     fetchSizes();
-  }, [formData.catalog_ids, formData.catalog_names]);
+  }, [formData.catalog_ids, formData.catalog_names]); */
 
-  // Update formData when selected sizes change
-  useEffect(() => {
+  // TEMPORARILY DISABLED - Update formData when selected sizes change
+  /* useEffect(() => {
     const sizeIds = selectedSizes.map(s => s.id).join(',');
     setFormData(prev => ({
       ...prev,
       sizes: sizeIds || undefined
     }));
-  }, [selectedSizes]);
+  }, [selectedSizes]); */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -415,14 +411,14 @@ export default function CreateAlertPage() {
             )}
           </div>
 
-          {/* Size selection (shows when categories are selected) */}
-          {availableSizes.length > 0 && (
+          {/* TEMPORARILY DISABLED - Size IDs vary by gender (men's 42 ≠ women's 42) */}
+          {/* Size selection will be re-enabled once the gender context issue is resolved */}
+          {/* {availableSizes.length > 0 && (
             <div className="form-group">
               <label>Sizes (Optional)</label>
 
               {loadingSizes && <div style={{ marginBottom: '10px' }}>Loading sizes...</div>}
 
-              {/* Selected sizes */}
               {selectedSizes.length > 0 && (
                 <div style={{ marginBottom: '10px' }}>
                   {selectedSizes.map(size => (
@@ -457,7 +453,6 @@ export default function CreateAlertPage() {
                 </div>
               )}
 
-              {/* Size selection dropdown */}
               <select
                 value=""
                 onChange={(e) => {
@@ -480,7 +475,7 @@ export default function CreateAlertPage() {
                 }
               </select>
             </div>
-          )}
+          )} */}
 
           <div className="form-group">
             <label>Check Interval (minutes) *</label>
