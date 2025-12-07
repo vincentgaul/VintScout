@@ -6,7 +6,7 @@ A self-hosted web application for monitoring Vinted marketplaces. Create custom 
 
 - **Smart Search**: Autocomplete brand search and visual category tree navigation
 - **Multi-Country Support**: Monitor Vinted marketplaces across 20+ European countries
-- **Flexible Notifications**: Telegram, email, or Slack alerts for new items
+- **Telegram Notifications**: Instant alerts when new items match your criteria
 - **Self-Hosted**: Complete control of your data with SQLite or PostgreSQL
 - **Docker Ready**: One-command deployment with Docker Compose
 
@@ -69,7 +69,7 @@ Frontend development server runs on `http://localhost:5173`
 - **Backend**: FastAPI with SQLAlchemy ORM
 - **Frontend**: React 18 with TypeScript and TailwindCSS
 - **Database**: SQLite (default) or PostgreSQL
-- **Notifications**: Telegram, email (SMTP), or Slack webhooks
+- **Notifications**: Telegram bot integration
 
 ## How It Works
 
