@@ -12,9 +12,10 @@ It sets up:
 
 When you run this with 'uvicorn backend.main:app', this file starts the entire backend.
 """
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import os
 
 from backend.database import engine, Base
@@ -90,7 +91,19 @@ def health_check():
 if settings.DEPLOYMENT_MODE == "self-hosted":
     frontend_dist = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
     if os.path.exists(frontend_dist):
-        app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+        # Mount static assets (JS, CSS, images, etc.)
+        app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+
+        # Catch-all route for SPA - serves index.html for all non-API routes
+        # This MUST be defined last to allow API routes to take precedence
+        @app.get("/{full_path:path}")
+        async def serve_spa(_full_path: str = ""):
+            """
+            Serve index.html for all non-API routes to support client-side routing.
+            This allows React Router to handle routes like /alerts, /alert/123, etc.
+            """
+            index_path = os.path.join(frontend_dist, "index.html")
+            return FileResponse(index_path)
 else:
     # In cloud mode, show API info at root
     @app.get("/")
