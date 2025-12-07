@@ -1,5 +1,5 @@
 """
-VintedScanner Web - FastAPI Application Entry Point
+VintScout - FastAPI Application Entry Point
 
 This is the main application file that starts the web server.
 It sets up:
@@ -23,7 +23,7 @@ from backend.services.scheduler_service import start_scheduler, stop_scheduler
 
 # Create FastAPI app
 app = FastAPI(
-    title="VintedScanner Web API",
+    title="VintScout API",
     description="REST API for Vinted marketplace alerts",
     version="1.0.0"
 )
@@ -85,7 +85,7 @@ app.include_router(sizes_router, prefix="/api")
 @app.get("/")
 def root():
     return {
-        "message": "VintedScanner Web API",
+        "message": "VintScout API",
         "version": "1.0.0",
         "docs": "/docs"
     }

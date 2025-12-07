@@ -4,25 +4,25 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: vintedscanner-db
+    container_name: vintscout-db
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-vintedscanner}
+      - POSTGRES_USER=${POSTGRES_USER:-vintscout}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
-      - POSTGRES_DB=${POSTGRES_DB:-vintedscanner}
+      - POSTGRES_DB=${POSTGRES_DB:-vintscout}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vintedscanner}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vintscout}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  vintedscanner:
+  vintscout:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vintedscanner-web
+    container_name: vintscout
     depends_on:
       db:
         condition: service_healthy
@@ -30,7 +30,7 @@ services:
       - "3000:3000"
     environment:
       - DEPLOYMENT_MODE=cloud
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-vintedscanner}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-vintedscanner}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-vintscout}:${POSTGRES_PASSWORD:-changeme}@db:5432/${POSTGRES_DB:-vintscout}
       - JWT_SECRET=${JWT_SECRET}
       - CORS_ORIGINS=${CORS_ORIGINS:-["https://yourdomain.com"]}
 

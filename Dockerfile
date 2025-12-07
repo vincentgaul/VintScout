@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for VintedScanner Web
+# Multi-stage Dockerfile for VintScout
 #
 # This file tells Docker how to package our application into a container.
 # A container is like a lightweight virtual machine that includes everything
@@ -11,7 +11,7 @@
 # Why multi-stage? To keep the final container small - we don't need Node.js
 # in the final image, only the built frontend files.
 #
-# To build: docker build -t vintedscanner-web .
+# To build: docker build -t vintscout .
 # To run: docker-compose up
 
 # Stage 1: Build frontend

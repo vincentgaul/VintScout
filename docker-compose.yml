@@ -2,11 +2,11 @@
 version: '3.8'
 
 services:
-  vintedscanner:
+  vintscout:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: vintedscanner-web
+    container_name: vintscout
     ports:
       - "3000:3000"
     environment:
@@ -36,7 +36,7 @@ services:
       - VINTED_API_TIMEOUT=30
 
     volumes:
-      - vintedscanner-data:/app/backend/data  # Persist SQLite database and user data
+      - vintscout-data:/app/backend/data  # Persist SQLite database and user data
 
     restart: unless-stopped
 
@@ -48,4 +48,4 @@ services:
       start_period: 40s
 
 volumes:
-  vintedscanner-data:
+  vintscout-data:

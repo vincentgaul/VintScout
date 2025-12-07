@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-VintedScanner Web is a modern web-based alert platform for Vinted marketplace notifications. It features intelligent brand/category search (users type "Nike" instead of finding ID "53").
+VintScout is a modern web-based alert platform for Vinted marketplace notifications. It features intelligent brand/category search (users type "Nike" instead of finding ID "53").
 
 **Tech Stack:** FastAPI (Python 3.11+), React 18 + TypeScript, SQLite/PostgreSQL, Docker
 

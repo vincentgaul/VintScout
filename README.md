@@ -1,14 +1,14 @@
-# VintedScanner Web
+# VintScout
 
 **Modern web-based alert platform for Vinted marketplace notifications**
 
-VintedScanner Web is a complete rewrite of the CLI-based VintedScanner with a web interface, featuring intelligent brand and category search. Get notified when new items matching your criteria appear on Vinted across 20+ countries.
+VintScout is a complete rewrite of the CLI-based VintedScanner with a web interface, featuring intelligent brand and category search. Get notified when new items matching your criteria appear on Vinted across 20+ countries.
 
 ## Key Features
 
 ### 🎯 Intelligent Brand & Category Search
 
-Unlike the original CLI tool that requires finding numeric IDs manually, VintedScanner Web provides:
+Unlike the original CLI tool that requires finding numeric IDs manually, VintScout provides:
 
 - **Autocomplete Brand Search**: Just type "Nike" - no need to find ID "53"
 - **Visual Category Tree**: Browse categories like a file explorer
@@ -52,20 +52,20 @@ Monitor Vinted marketplaces in 20+ countries:
 
 ```bash
 # Pull the latest image
-docker pull yourusername/vintedscanner-web:latest
+docker pull yourusername/vintscout:latest
 
 # Create a directory for data persistence
-mkdir -p vintedscanner-data
+mkdir -p vintscout-data
 
 # Run the container
 docker run -d \
-  --name vintedscanner \
+  --name vintscout \
   -p 3000:3000 \
-  -v vintedscanner-data:/app/backend/data \
+  -v vintscout-data:/app/backend/data \
   -e JWT_SECRET=$(openssl rand -hex 32) \
   -e TELEGRAM_BOT_TOKEN=your-bot-token \
   -e TELEGRAM_CHAT_ID=your-chat-id \
-  yourusername/vintedscanner-web:latest
+  yourusername/vintscout:latest
 ```
 
 Access the application:
@@ -81,9 +81,9 @@ Create a `docker-compose.yml` file:
 version: '3.8'
 
 services:
-  vintedscanner:
-    image: yourusername/vintedscanner-web:latest
-    container_name: vintedscanner-web
+  vintscout:
+    image: yourusername/vintscout:latest
+    container_name: vintscout
     ports:
       - "3000:3000"
     environment:
@@ -91,11 +91,11 @@ services:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
     volumes:
-      - vintedscanner-data:/app/backend/data
+      - vintscout-data:/app/backend/data
     restart: unless-stopped
 
 volumes:
-  vintedscanner-data:
+  vintscout-data:
 ```
 
 Then run:
@@ -107,8 +107,8 @@ docker-compose up -d
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/vintedscanner-web.git
-cd vintedscanner-web
+git clone https://github.com/yourusername/vintscout.git
+cd vintscout
 ```
 
 2. Create environment file:
@@ -231,9 +231,9 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/vintedscanner-web/issues)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/vintscout/issues)
 - **Documentation**: See [docs/](docs/) folder
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/vintedscanner-web/discussions)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/vintscout/discussions)
 
 ## Contributing
 

@@ -2,7 +2,7 @@
 set -e
 
 echo "========================================="
-echo "VintedScanner Startup"
+echo "VintScout Startup"
 echo "========================================="
 
 # Paths
