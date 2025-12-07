@@ -52,6 +52,7 @@ export interface ItemHistory {
   item_id: string;
   title: string;
   url: string;
+  image_url?: string;
   price: number;
   found_at: string;
 }

@@ -148,3 +148,42 @@ nav a:hover {
   font-weight: 500;
   color: #333;
 }
+
+/* Item thumbnail styles */
+.item-thumbnail {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.item-thumbnail-placeholder {
+  width: 120px;
+  height: 120px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* Responsive design for mobile */
+@media (max-width: 600px) {
+  .item-thumbnail,
+  .item-thumbnail-placeholder {
+    width: 80px;
+    height: 80px;
+  }
+
+  .item-card {
+    padding: 10px;
+  }
+
+  .container {
+    padding: 10px;
+  }
+}

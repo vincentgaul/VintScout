@@ -66,14 +66,33 @@ export default function AlertDetailPage() {
           <ul className="item-list">
             {items.map(item => (
               <li key={item.id} className="item-card">
-                <h4>{item.title}</h4>
-                <p><strong>Price:</strong> €{item.price.toFixed(2)}</p>
-                <p><strong>Found:</strong> {new Date(item.found_at).toLocaleString()}</p>
-                <p>
-                  <a href={item.url} target="_blank" rel="noopener noreferrer">
-                    View on Vinted →
-                  </a>
-                </p>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  {/* Thumbnail */}
+                  {item.image_url ? (
+                    <img
+                      src={item.image_url}
+                      alt={item.title}
+                      loading="lazy"
+                      className="item-thumbnail"
+                    />
+                  ) : (
+                    <div className="item-thumbnail-placeholder">
+                      No Image
+                    </div>
+                  )}
+
+                  {/* Item details */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ marginTop: 0 }}>{item.title}</h4>
+                    <p><strong>Price:</strong> €{item.price.toFixed(2)}</p>
+                    <p><strong>Found:</strong> {new Date(item.found_at).toLocaleString()}</p>
+                    <p>
+                      <a href={item.url} target="_blank" rel="noopener noreferrer">
+                        View on Vinted →
+                      </a>
+                    </p>
+                  </div>
+                </div>
               </li>
             ))}
           </ul>
