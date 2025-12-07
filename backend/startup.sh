@@ -6,8 +6,13 @@ echo "VintScout Startup"
 echo "========================================="
 
 # Paths
-DB_PATH="/app/backend/data/vinted.db"
-TEMPLATE_PATH="/app/backend/data/vinted.db.template"
+DATA_DIR="/app/backend/data"
+DB_PATH="$DATA_DIR/vinted.db"
+TEMPLATE_PATH="$DATA_DIR/vinted.db.template"
+
+# Ensure data directory exists with correct permissions
+mkdir -p "$DATA_DIR"
+chmod 755 "$DATA_DIR"
 
 # Initialize database from template if it doesn't exist
 if [ ! -f "$DB_PATH" ]; then
@@ -19,6 +24,7 @@ if [ ! -f "$DB_PATH" ]; then
     fi
 
     cp "$TEMPLATE_PATH" "$DB_PATH"
+    chmod 644 "$DB_PATH"
     echo "✓ Database initialized from template"
 else
     echo "✓ Using existing database"
