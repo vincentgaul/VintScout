@@ -11,7 +11,6 @@ export default function AlertDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -30,14 +29,6 @@ export default function AlertDetailPage() {
       ]);
       setAlert(alertData);
       setItems(itemsData);
-
-      // If we got fewer items than requested, we know total
-      if (itemsData.length < itemsPerPage) {
-        setTotalItems(offset + itemsData.length);
-      } else {
-        // Estimate - we have at least this many
-        setTotalItems(offset + itemsData.length + 1);
-      }
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load data');
     } finally {
