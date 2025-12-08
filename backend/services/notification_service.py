@@ -134,7 +134,7 @@ class NotificationService:
             # Send header message
             message = (
                 f"🔔 *Vinted Alert: {_escape_markdown(alert.name)}*\n\n"
-                f"Found {len(items)} new items!\n\n"
+                f"{_escape_markdown(f'Found {len(items)} new items!')}\n\n"
             )
 
             # Add each item (limit to 10)
@@ -143,8 +143,9 @@ class NotificationService:
                 title = _escape_markdown(item.get('title'))
                 link = _escape_markdown_url(item.get('url'))
                 price_text = _escape_markdown(price)
+                index_text = _escape_markdown(str(i))
                 message += (
-                    f"{i}. [{title}]({link})\n"
+                    f"{index_text}\. [{title}]({link})\n"
                     f"   💰 {price_text}\n\n"
                 )
 

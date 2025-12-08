@@ -16,6 +16,7 @@ Vinted does not support notifications. This is a self-hosted web application for
 - **Improved Search**: Add filter by size, color, condition, etc.
 - **Email Notifications**: Alternative to Telegram alerts
 - **Improved UI**: More user-friendly interface and mobile responsiveness
+- **Cloud Deployment**: Managed hosting option with PostgreSQL backend
 
 ## Quick Start
 

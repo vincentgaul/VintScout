@@ -13,12 +13,7 @@ VintScout is a modern web-based alert platform for Vinted marketplace notificati
 - Modular architecture with clear separation of concerns
 - DRY. Keep things simple and maintainable
 
-## Documentation Structure
 
-- **`docs/ARCHITECTURE.md`** - Detailed architecture, design patterns, database schema, performance targets
-- **`docs/API.md`** - Complete API endpoint documentation
-- **`docs/DEPLOYMENT.md`** - Deployment guides (Docker, cloud platforms)
-- **`PLAN.md`** - Full technical specification and implementation plan
 
 ## Critical File Locations
 
@@ -79,7 +74,6 @@ npm run build        # Production build
 
 ```bash
 docker-compose up --build                       # Self-hosted (SQLite)
-docker-compose -f docker-compose.cloud.yml up   # Cloud (PostgreSQL)
 ```
 
 ## Key Architecture Concepts
@@ -116,64 +110,9 @@ See `.env.example` for all options. Key variables:
 **Required:**
 - `DATABASE_URL` - SQLite or PostgreSQL connection
 - `JWT_SECRET` - Generate with `openssl rand -hex 32`
-- `DEPLOYMENT_MODE` - "self-hosted" or "cloud"
+- `DEPLOYMENT_MODE` - "self-hosted" or "cloud" # TODO: implement cloud mode
 
-**Brand/Category:**
-- `BRAND_CACHE_TTL_DAYS` (default: 30)
-- `SEED_POPULAR_BRANDS_ON_STARTUP` (default: true)
 
 **Notifications (optional):**
-- `SMTP_*` - Email configuration
-- `SLACK_WEBHOOK_URL` - Slack webhooks
+
 - `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` - Telegram bot
-
-## Common Workflows
-
-### Adding a New Alert Parameter
-
-1. Add column to `alerts` table: `uv run alembic revision --autogenerate -m "add param"`
-2. Update `Alert` model in `models/alert.py`
-3. Update Pydantic schemas in `schemas/alert.py`
-4. Modify `VintedClient.search()` to use parameter
-5. Update API endpoint in `api/alerts.py`
-6. Add UI field in `AlertForm.tsx`
-
-### Adding Brand/Category Support for New Country
-
-1. Add country-specific brands to `seeds/popular_brands.py`
-2. Run: `uv run python -m backend.seeds.seed_popular_brands --country XX`
-3. Verify: `GET /api/brands/search?q=Nike&country=XX`
-4. Verify: `GET /api/categories/tree?country=XX`
-
-### Debugging Vinted API Issues
-
-1. Check logs for specific country
-2. Test cookie acquisition: `VintedClient.initialize_session()`
-3. Verify endpoint URLs (may change)
-4. Check rate limiting (30s minimum between calls per country)
-5. Brand/category APIs are separate from item search - test independently
-
-## Important Notes
-
-- **Vinted API is unofficial** - Abstract all calls through `VintedClient` for easy updates
-- **Rate limits** - 30s minimum between Vinted API calls per country
-- **Brand IDs vary by country** - Always include `country_code` in queries
-- **Cache is expendable** - Can always re-fetch from Vinted if corrupted
-- **Security** - Never commit `.env` files
-- **Multi-country** - Supports 20+ countries (FR, IE, DE, UK, ES, IT, PL, CZ, LT, LV, NL, BE, AT, LU, PT, SE, DK, FI, NO, HU, RO)
-
-## Testing Guidelines
-
-**Backend:**
-- Mock Vinted API responses (unofficial API)
-- Test both SQLite and PostgreSQL
-- Mock external APIs (email, Slack, Telegram)
-
-**Frontend:**
-- Test BrandAutocomplete with React Query
-- Test CategoryTree recursive rendering
-- Test AlertForm integration
-
-## Attribution
-
-Original VintedScanner by Andrea Draghetti. This is a complete rewrite but inspired by the original's Vinted API integration patterns.
