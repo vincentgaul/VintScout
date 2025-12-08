@@ -8,7 +8,7 @@ echo "========================================="
 # Paths
 DATA_DIR="/app/backend/data"
 DB_PATH="$DATA_DIR/vinted.db"
-TEMPLATE_PATH="$DATA_DIR/vinted.db.template"
+TEMPLATE_SOURCE="/app/backend/vinted.db.template"
 
 # Ensure data directory exists with correct permissions
 mkdir -p "$DATA_DIR"
@@ -18,12 +18,12 @@ chmod 755 "$DATA_DIR"
 if [ ! -f "$DB_PATH" ]; then
     echo "First run detected - initializing database from template..."
 
-    if [ ! -f "$TEMPLATE_PATH" ]; then
-        echo "ERROR: Template database not found at $TEMPLATE_PATH"
+    if [ ! -f "$TEMPLATE_SOURCE" ]; then
+        echo "ERROR: Template database not found at $TEMPLATE_SOURCE"
         exit 1
     fi
 
-    cp "$TEMPLATE_PATH" "$DB_PATH"
+    cp "$TEMPLATE_SOURCE" "$DB_PATH"
     chmod 644 "$DB_PATH"
     echo "✓ Database initialized from template"
 else

@@ -48,7 +48,37 @@ The application includes a pre-seeded database with popular brands and categorie
 
 ### Unraid / Docker CLI
 
-For Unraid or other Docker-based systems, first build or pull the image, then run:
+For Unraid or other Docker-based systems you can either run the single `docker run` command below **or** use Docker Compose.
+
+#### Option A: docker-compose.yml
+
+Create a `docker-compose.yml` like this (adjust paths/secrets):
+
+```yaml
+version: "3.9"
+
+services:
+  vintscout:
+    image: vincentgaul/vintscout:latest
+    container_name: vintscout
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - /mnt/user/appdata/vintscout:/app/backend/data
+    environment:
+      DEPLOYMENT_MODE: self-hosted
+      DATABASE_URL: sqlite:////app/backend/data/vinted.db
+      JWT_SECRET: your-secret-here
+      TELEGRAM_BOT_TOKEN: ""
+      TELEGRAM_CHAT_ID: ""
+```
+
+Then run `docker compose up -d` (or use Unraid's Compose Manager plugin).
+
+#### Option B: Docker CLI
+
+If you prefer raw Docker commands, first build or pull the image, then run:
 
 ```bash
 # Option 1: Pull from Docker Hub
