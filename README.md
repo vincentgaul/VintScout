@@ -18,6 +18,13 @@ Vinted does not support notifications. This is a self-hosted web application for
 - **Improved UI**: More user-friendly interface and mobile responsiveness
 - **Cloud Deployment**: Managed hosting option with PostgreSQL backend
 
+## CI/CD
+- GitHub Actions workflow `.github/workflows/dockerhub-publish.yml` builds the Docker image on every push to `main` and pushes it to Docker Hub.
+- Set the following repository secrets before enabling the workflow:
+  - `DOCKERHUB_USERNAME`
+  - `DOCKERHUB_TOKEN` (create a Docker Hub access token)
+- Images are tagged as `latest` and with the commit SHA (e.g., `vincentgaul/vintscout:abc1234`).
+
 ## Quick Start
 
 **Prerequisites**: Docker and Docker Compose
