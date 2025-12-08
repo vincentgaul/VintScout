@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Alert } from '../types';
+import { getCurrencySymbol } from '../constants/currency';
 
 interface AlertCardProps {
   alert: Alert;
@@ -25,6 +26,10 @@ export default function AlertCard({
     if (!alert.last_checked_at) return '✅ Active (Creating Baseline)';
     return '✅ Active';
   };
+
+  const hasPriceMin = alert.price_min !== undefined && alert.price_min !== null;
+  const hasPriceMax = alert.price_max !== undefined && alert.price_max !== null;
+  const currencySymbol = getCurrencySymbol(alert.currency);
 
   return (
     <div className="card">
@@ -88,8 +93,12 @@ export default function AlertCard({
           {alert.sizes.split(',').map((sizeId: string) => sizeId.trim()).join(', ')}
         </p>
       )}
-      {alert.price_min !== undefined && alert.price_max !== undefined && (
-        <p><strong>Price Range:</strong> €{alert.price_min} - €{alert.price_max}</p>
+      {(hasPriceMin || hasPriceMax) && (
+        <p>
+          <strong>Price Range:</strong>{' '}
+          {hasPriceMin ? `${currencySymbol}${alert.price_min}` : 'Any'} - {hasPriceMax ? `${currencySymbol}${alert.price_max}` : 'Any'}
+          {' '}({alert.currency})
+        </p>
       )}
         </>
       )}

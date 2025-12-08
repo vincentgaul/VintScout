@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import * as api from '../services/api';
 import type { Alert, ItemHistory } from '../types';
 import AlertCard from '../components/AlertCard';
+import { getCurrencySymbol } from '../constants/currency';
 
 export default function AlertDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -55,40 +56,49 @@ export default function AlertDetailPage() {
       ) : (
         <>
           <ul className="item-list">
-            {items.map(item => (
-              <li key={item.id} className="item-card">
-                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                  {/* Thumbnail */}
-                  {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.title}
-                      loading="lazy"
-                      className="item-thumbnail"
-                    />
-                  ) : (
-                    <div className="item-thumbnail-placeholder">
-                      No Image
-                    </div>
-                  )}
+            {items.map(item => {
+              const currencyCode = item.currency || alert.currency;
+              const symbol = getCurrencySymbol(currencyCode);
 
-                  {/* Item details */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <h4 style={{ marginTop: 0 }}>{item.title}</h4>
-                    {item.brand_name && <p><strong>Brand:</strong> {item.brand_name}</p>}
-                    {item.size && <p><strong>Size:</strong> {item.size}</p>}
-                    {item.condition && <p><strong>Condition:</strong> {item.condition}</p>}
-                    <p><strong>Price:</strong> €{item.price.toFixed(2)}</p>
-                    <p><strong>Found:</strong> {new Date(item.found_at).toLocaleString()}</p>
-                    <p>
-                      <a href={item.url} target="_blank" rel="noopener noreferrer">
-                        View on Vinted →
-                      </a>
-                    </p>
+              return (
+                <li key={item.id} className="item-card">
+                  <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                    {/* Thumbnail */}
+                    {item.image_url ? (
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        loading="lazy"
+                        className="item-thumbnail"
+                      />
+                    ) : (
+                      <div className="item-thumbnail-placeholder">
+                        No Image
+                      </div>
+                    )}
+
+                    {/* Item details */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h4 style={{ marginTop: 0 }}>{item.title}</h4>
+                      {item.brand_name && <p><strong>Brand:</strong> {item.brand_name}</p>}
+                      {item.size && <p><strong>Size:</strong> {item.size}</p>}
+                      {item.condition && <p><strong>Condition:</strong> {item.condition}</p>}
+                      <p>
+                        <strong>Price:</strong>{' '}
+                        {symbol}
+                        {item.price.toFixed(2)} ({currencyCode})
+                      </p>
+                      <p><strong>Found:</strong> {new Date(item.found_at).toLocaleString()}</p>
+                      <p>
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                          View on Vinted →
+                        </a>
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
 
           <div className="pagination">

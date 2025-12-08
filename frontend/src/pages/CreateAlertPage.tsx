@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa';
 import * as api from '../services/api';
 import type { AlertCreate, Brand, Category } from '../types';
+import { getCurrencyForCountry, getCurrencyLabel } from '../constants/currency';
 
 // Helper to transform Category[] to CheckboxTree nodes
 const transformCategoriesToNodes = (categories: Category[]): any[] => {
@@ -39,15 +40,19 @@ const findCategoryById = (categories: Category[], id: string): Category | undefi
   return undefined;
 };
 
+const DEFAULT_COUNTRY_CODE = 'fr';
+
 export default function CreateAlertPage() {
+  const defaultCurrency = getCurrencyForCountry(DEFAULT_COUNTRY_CODE);
   const [formData, setFormData] = useState<AlertCreate>({
     name: '',
-    country_code: 'fr',
+    country_code: DEFAULT_COUNTRY_CODE,
     search_text: '',
     brand_ids: '',
     catalog_ids: '',
     price_min: undefined,
     price_max: undefined,
+    currency: defaultCurrency,
     check_interval_minutes: 15,
     notification_config: { telegram: { enabled: true } }
   });
@@ -155,7 +160,13 @@ export default function CreateAlertPage() {
   };
 
   const handleChange = (field: keyof AlertCreate, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'country_code') {
+        updated.currency = getCurrencyForCountry(value);
+      }
+      return updated;
+    });
   };
 
   const handleBrandSearch = async (query: string) => {
@@ -311,7 +322,7 @@ export default function CreateAlertPage() {
           </div>
 
           <div className="form-group">
-            <label>Price Min (€)</label>
+            <label>Price Min ({getCurrencyLabel(formData.currency)})</label>
             <input
               type="number"
               step="0.01"
@@ -322,7 +333,7 @@ export default function CreateAlertPage() {
           </div>
 
           <div className="form-group">
-            <label>Price Max (€)</label>
+            <label>Price Max ({getCurrencyLabel(formData.currency)})</label>
             <input
               type="number"
               step="0.01"
@@ -484,6 +495,7 @@ export default function CreateAlertPage() {
               onChange={(e) => handleChange('check_interval_minutes', parseInt(e.target.value))}
               required
             >
+              <option value={1}>1 minute</option>
               <option value={5}>5 minutes</option>
               <option value={15}>15 minutes</option>
               <option value={30}>30 minutes</option>

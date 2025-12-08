@@ -20,6 +20,7 @@ export interface Alert {
   sizes?: string;
   price_min?: number;
   price_max?: number;
+  currency: string;
   check_interval_minutes: number;
   notification_config: Record<string, any>;
   last_checked_at?: string;
@@ -41,6 +42,7 @@ export interface AlertCreate {
   sizes?: string;
   price_min?: number;
   price_max?: number;
+  currency: string;
   check_interval_minutes: number;
   notification_config?: Record<string, any>;
   is_active?: boolean;
@@ -57,6 +59,7 @@ export interface ItemHistory {
   size?: string;
   condition?: string;
   price: number;
+  currency: string;
   found_at: string;
 }
 

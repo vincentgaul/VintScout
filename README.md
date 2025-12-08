@@ -123,7 +123,7 @@ Frontend development server runs on `http://localhost:5173`
 
 ## Supported Countries
 
-France, Ireland, Germany, United Kingdom, Spain, Italy, Poland, Czech Republic, Lithuania, Latvia, Netherlands, Belgium, Austria, Luxembourg, Portugal, Sweden, Denmark, Finland, Norway, Hungary, Romania
+France, Ireland, Germany, United Kingdom, Spain, Italy, Poland, Czech Republic, Lithuania, Latvia, Netherlands, Belgium, Austria, Luxembourg, Portugal, Sweden, Denmark, Finland, Hungary, Romania
 
 ## License
 

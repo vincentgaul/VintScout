@@ -16,6 +16,44 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 
 
+COUNTRY_CURRENCY = {
+    "at": "EUR",
+    "be": "EUR",
+    "cz": "CZK",
+    "dk": "DKK",
+    "ee": "EUR",
+    "fi": "EUR",
+    "fr": "EUR",
+    "de": "EUR",
+    "gr": "EUR",
+    "hu": "HUF",
+    "ie": "EUR",
+    "it": "EUR",
+    "lt": "EUR",
+    "lv": "EUR",
+    "lu": "EUR",
+    "nl": "EUR",
+    "pl": "PLN",
+    "pt": "EUR",
+    "ro": "RON",
+    "se": "SEK",
+    "sk": "EUR",
+    "si": "EUR",
+    "es": "EUR",
+    "uk": "GBP",
+    "hr": "EUR",
+}  # Fallback handled below
+
+DEFAULT_CURRENCY = "EUR"
+
+
+def get_currency_for_country(country_code: Optional[str]) -> str:
+    """Return ISO currency code for given country, defaulting to EUR."""
+    if not country_code:
+        return DEFAULT_CURRENCY
+    return COUNTRY_CURRENCY.get(country_code.lower(), DEFAULT_CURRENCY)
+
+
 class AlertBase(BaseModel):
     """
     Base schema with common alert fields.
@@ -35,11 +73,20 @@ class AlertBase(BaseModel):
     sizes: Optional[str] = Field(None, description="Comma-separated size filters (future feature)")
     conditions: Optional[str] = Field(None, description="Comma-separated condition filters (future feature)")
     colors: Optional[str] = Field(None, description="Comma-separated color filters (future feature)")
-    check_interval_minutes: int = Field(default=15, ge=5, le=1440, description="How often to check for new items (5-1440 minutes)")
+    check_interval_minutes: int = Field(default=15, ge=1, le=1440, description="How often to check for new items (1-1440 minutes)")
     notification_config: Dict[str, Any] = Field(
         default_factory=dict,
         description="Notification settings (email, webhook, etc.)"
     )
+
+    @field_validator('currency', mode='before')
+    @classmethod
+    def default_currency(cls, value, info):
+        """Infer currency from country when not provided."""
+        if value:
+            return value.upper()
+        country_code = info.data.get('country_code')
+        return get_currency_for_country(country_code)
 
     @field_validator('price_max')
     @classmethod
@@ -109,9 +156,15 @@ class AlertUpdate(BaseModel):
     sizes: Optional[str] = None
     conditions: Optional[str] = None
     colors: Optional[str] = None
-    check_interval_minutes: Optional[int] = Field(None, ge=5, le=1440)
+    check_interval_minutes: Optional[int] = Field(None, ge=1, le=1440)
     notification_config: Optional[Dict[str, Any]] = None
     is_active: Optional[bool] = None
+
+    @field_validator('currency', mode='before')
+    @classmethod
+    def normalize_currency(cls, value):
+        """Ensure updated currency codes are uppercase."""
+        return value.upper() if value else value
 
     model_config = ConfigDict(
         json_schema_extra={
