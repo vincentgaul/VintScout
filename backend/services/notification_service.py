@@ -39,6 +39,29 @@ from backend.config import settings
 
 logger = logging.getLogger(__name__)
 
+MD_SPECIAL_CHARS = set("_*[]()~`>#+-=|{}.!")
+
+
+def _escape_markdown(text: Optional[str]) -> str:
+    """Escape MarkdownV2 special characters."""
+    if text is None:
+        return ""
+    escaped = []
+    for ch in str(text):
+        if ch in MD_SPECIAL_CHARS:
+            escaped.append(f"\\{ch}")
+        else:
+            escaped.append(ch)
+    return ''.join(escaped)
+
+
+def _escape_markdown_url(url: Optional[str]) -> str:
+    """Escape parentheses in URLs for MarkdownV2 links."""
+    if url is None:
+        return ""
+    url_str = str(url)
+    return url_str.replace('(', '\\(').replace(')', '\\)')
+
 
 class NotificationService:
     """
@@ -110,17 +133,19 @@ class NotificationService:
 
             # Send header message
             message = (
-                f"🔔 *Vinted Alert: {alert.name}*\n\n"
+                f"🔔 *Vinted Alert: {_escape_markdown(alert.name)}*\n\n"
                 f"Found {len(items)} new items!\n\n"
             )
 
             # Add each item (limit to 10)
             for i, item in enumerate(items[:10], 1):
                 price = f"{item['price']} {item.get('currency', '')}"
-                # Escape markdown special chars if needed, but for now simple format
+                title = _escape_markdown(item.get('title'))
+                link = _escape_markdown_url(item.get('url'))
+                price_text = _escape_markdown(price)
                 message += (
-                    f"{i}. [{item['title']}]({item['url']})\n"
-                    f"   💰 {price}\n\n"
+                    f"{i}. [{title}]({link})\n"
+                    f"   💰 {price_text}\n\n"
                 )
 
             if len(items) > 10:
@@ -132,11 +157,19 @@ class NotificationService:
                 json={
                     "chat_id": chat_id,
                     "text": message,
-                    "parse_mode": "Markdown",
+                    "parse_mode": "MarkdownV2",
                     "disable_web_page_preview": True
                 }
             )
-            response.raise_for_status()
+            try:
+                response.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                logger.error(
+                    "[TELEGRAM] API error %s: %s",
+                    exc.response.status_code,
+                    exc.response.text
+                )
+                raise
             
             logger.info(f"[TELEGRAM] Successfully sent notification")
 

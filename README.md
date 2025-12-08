@@ -12,6 +12,11 @@ Vinted does not support notifications. This is a self-hosted web application for
 - **Self-Hosted**: Complete control of your data 
 - **Docker Ready**: One-command deployment with Docker Compose
 
+## TODO
+- **Improved Search**: Add filter by size, color, condition, etc.
+- **Email Notifications**: Alternative to Telegram alerts
+- **Improved UI**: More user-friendly interface and mobile responsiveness
+
 ## Quick Start
 
 **Prerequisites**: Docker and Docker Compose
@@ -38,11 +43,11 @@ The application includes a pre-seeded database with popular brands and categorie
 For Unraid or other Docker-based systems, first build or pull the image, then run:
 
 ```bash
-# Option 1: Pull from Docker Hub (once published)
-docker pull yourusername/vintscout:latest
+# Option 1: Pull from Docker Hub
+docker pull vincentgaul/vintscout:latest
 
 # Option 2: Build locally
-git clone https://github.com/yourusername/vintscout.git
+git clone https://github.com/vincentgaul/vintscout.git
 cd vintscout
 docker build -t vintscout:latest .
 ```
@@ -64,7 +69,7 @@ docker run -d \
 ```
 
 **Unraid Web UI Configuration:**
-- **Repository:** `yourusername/vintscout:latest`
+- **Repository:** `vincentgaul/vintscout:latest`
 - **Port:** `3000` (container) → `3000` (host)
 - **Path:** `/app/backend/data` (container) → `/mnt/user/appdata/vintscout` (host)
 - **Environment Variables:**
@@ -91,38 +96,6 @@ cp .env.example .env
 
 See `.env.example` for all available options.
 
-## Development
-
-**Backend** (Python 3.11+):
-```bash
-cd backend
-pip install -r requirements.txt
-alembic upgrade head
-uvicorn backend.main:app --reload --port 3000
-```
-
-**Frontend** (Node.js 18+):
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Frontend development server runs on `http://localhost:5173`
-
-## Architecture
-
-- **Backend**: FastAPI with SQLAlchemy ORM
-- **Frontend**: React 18 with TypeScript and TailwindCSS
-- **Database**: SQLite (default) or PostgreSQL
-- **Notifications**: Telegram bot integration
-
-## How It Works
-
-1. Create an alert with search criteria (brands, categories, price range, sizes)
-2. VintScout checks Vinted every few minutes for new listings
-3. Receive notifications via Telegram when matching items are found
-4. View your alert history and manage alerts through the web dashboard
 
 ## Supported Countries
 
