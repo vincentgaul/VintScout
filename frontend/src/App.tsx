@@ -56,29 +56,46 @@ function App() {
   return (
     <>
       {isAuthenticated && (
-        <nav>
-          <Link to="/alerts">My Alerts</Link>
-          <Link to="/alerts/new">Create Alert</Link>
+        <nav
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '8px',
+            padding: '10px'
+          }}
+        >
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <Link to="/alerts">My Alerts</Link>
+            <Link to="/alerts/new">Create Alert</Link>
+          </div>
           {currentUser && (
-            <div style={{ float: 'right', position: 'relative' }}>
+            <div style={{ position: 'relative' }}>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowDropdown(!showDropdown);
                 }}
-                style={{ cursor: 'pointer' }}
+                style={{
+                  cursor: 'pointer',
+                  maxWidth: '180px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+                title={currentUser.email}
               >
-                {currentUser.email} ▼
+                {currentUser.email}
               </button>
               {showDropdown && (
                 <div style={{
                   position: 'absolute',
                   right: 0,
-                  top: '100%',
+                  top: 'calc(100% + 4px)',
                   background: 'white',
                   border: '1px solid #ddd',
                   borderRadius: '4px',
-                  marginTop: '4px',
                   minWidth: '150px',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   zIndex: 1000
