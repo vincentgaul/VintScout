@@ -1,13 +1,15 @@
 # VintScout
 
-A self-hosted web application for monitoring Vinted marketplaces. Create custom alerts and receive notifications when new items matching your criteria are listed.
+Vinted does not support notifications. This is a self-hosted web application for monitoring Vinted marketplaces. Create custom alerts and receive notifications when new items matching your criteria are listed.
+
+![Alert detail screenshot showing recent finds](./screenshot.png)
 
 ## Features
 
 - **Smart Search**: Autocomplete brand search and visual category tree navigation
 - **Multi-Country Support**: Monitor Vinted marketplaces across 20+ European countries
 - **Telegram Notifications**: Instant alerts when new items match your criteria
-- **Self-Hosted**: Complete control of your data with SQLite or PostgreSQL
+- **Self-Hosted**: Complete control of your data 
 - **Docker Ready**: One-command deployment with Docker Compose
 
 ## Quick Start
@@ -29,6 +31,7 @@ A self-hosted web application for monitoring Vinted marketplaces. Create custom 
    - Default credentials: `admin@example.com` / `admin`
 
 The application includes a pre-seeded database with popular brands and categories. Your data persists in a Docker volume.
+
 
 ### Unraid / Docker CLI
 
