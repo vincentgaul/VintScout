@@ -429,7 +429,13 @@ export default function CreateAlertPage() {
           </div>
 
           <div className="space-y-2">
-            <label>Sizes (Optional) — enter numeric Vinted size IDs</label>
+            <div className="flex items-center justify-between text-gray-500">
+              <span>Sizes (Optional)</span>
+              <label className="text-sm font-normal inline-flex items-center gap-2">
+                <input type="checkbox" checked readOnly className="opacity-60" />
+                Enter IDs (IDs only for now)
+              </label>
+            </div>
             <input
               type="text"
               placeholder="Comma-separated size IDs (e.g., 2100,2101)"
