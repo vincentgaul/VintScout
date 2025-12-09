@@ -15,8 +15,9 @@ export function useConditions() {
 
     if (!pendingPromise) {
       pendingPromise = api.getConditions().then(data => {
-        cachedConditions = data;
-        return data;
+        const sorted = [...data].sort((a, b) => a.sort_order - b.sort_order);
+        cachedConditions = sorted;
+        return sorted;
       });
     }
 

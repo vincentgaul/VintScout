@@ -87,4 +87,5 @@ export interface Size {
 export interface Condition {
   id: number;
   name: string;
+  sort_order: number;
 }

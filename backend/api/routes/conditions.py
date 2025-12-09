@@ -13,4 +13,4 @@ router = APIRouter(prefix="/conditions", tags=["conditions"])
 
 @router.get("", response_model=List[ConditionResponse])
 def list_conditions(db: Session = Depends(get_db)):
-    return db.query(Condition).order_by(Condition.id).all()
+    return db.query(Condition).order_by(Condition.sort_order, Condition.id).all()

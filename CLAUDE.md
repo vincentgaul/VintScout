@@ -12,6 +12,7 @@ VintScout is a modern web-based alert platform for Vinted marketplace notificati
 - Single codebase for self-hosted and cloud deployment (controlled via environment variables)
 - Modular architecture with clear separation of concerns
 - DRY. Keep things simple and maintainable
+- No monolithic files. Keep files shorter than 200 lines where possible
 
 
 
