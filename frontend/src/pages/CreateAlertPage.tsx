@@ -289,18 +289,17 @@ export default function CreateAlertPage() {
           </div>
 
           <div className="form-group">
-            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="field-label-row">
               <span>Categories (Optional)</span>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'normal' }}>
+              <label className="toggle-label">
                 <input
                   type="checkbox"
                   checked={useCategoryIds}
                   onChange={(e) => setUseCategoryIds(e.target.checked)}
-                  style={{ marginRight: '6px' }}
                 />
                 Enter IDs
               </label>
-            </label>
+            </div>
 
             {useCategoryIds ? (
               <div>
@@ -317,7 +316,7 @@ export default function CreateAlertPage() {
                     }));
                   }}
                 />
-                <small>Paste Vinted catalog IDs when you already know them.</small>
+                <small className="inline-note">Paste Vinted catalog IDs when you already know them.</small>
               </div>
             ) : (
               <div className="mb-4">
@@ -326,7 +325,7 @@ export default function CreateAlertPage() {
                     Loading categories...
                   </div>
                 ) : (
-                  <div className="border rounded p-2 bg-white" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <div className="tree-wrapper">
                     <CheckboxTree
                       nodes={transformCategoriesToNodes(treeCategories)}
                       checked={checkedCategories}
@@ -374,19 +373,18 @@ export default function CreateAlertPage() {
             />
           </div>
 
-          <div className="form-group" style={{ position: 'relative' }}>
-            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="form-group">
+            <div className="field-label-row">
               <span>Brands (Optional)</span>
-              <label style={{ fontSize: '0.85rem', fontWeight: 'normal' }}>
+              <label className="toggle-label">
                 <input
                   type="checkbox"
                   checked={useBrandIds}
                   onChange={(e) => setUseBrandIds(e.target.checked)}
-                  style={{ marginRight: '6px' }}
                 />
                 Enter IDs
               </label>
-            </label>
+            </div>
 
             {useBrandIds ? (
               <div>
@@ -403,36 +401,22 @@ export default function CreateAlertPage() {
                     }));
                   }}
                 />
-                <small>Enter numeric brand IDs directly.</small>
+                <small className="inline-note">Enter numeric brand IDs directly.</small>
               </div>
             ) : (
               <>
                 {selectedBrands.length > 0 && (
-                  <div style={{ marginBottom: '10px' }}>
+                  <div className="tag-list">
                     {selectedBrands.map(brand => (
                       <span
                         key={brand.id}
-                        style={{
-                          display: 'inline-block',
-                          background: '#e0e0e0',
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          marginRight: '8px',
-                          marginBottom: '8px'
-                        }}
+                        className="tag-pill"
                       >
                         {brand.name} (ID: {brand.vinted_id})
                         <button
                           type="button"
                           onClick={() => handleRemoveBrand(brand.id)}
-                          style={{
-                            marginLeft: '8px',
-                            background: 'none',
-                            border: 'none',
-                            cursor: 'pointer',
-                            padding: 0,
-                            color: '#666'
-                          }}
+                          className="tag-remove"
                         >
                           ×
                         </button>
@@ -441,43 +425,29 @@ export default function CreateAlertPage() {
                   </div>
                 )}
 
-                <input
-                  type="text"
-                  value={brandQuery}
-                  onChange={(e) => handleBrandSearch(e.target.value)}
-                  placeholder="Search brands (e.g., nike, zara, adidas)"
-                />
+                <div className="brand-search-wrapper">
+                  <input
+                    type="text"
+                    value={brandQuery}
+                    onChange={(e) => handleBrandSearch(e.target.value)}
+                    placeholder="Search brands (e.g., nike, zara, adidas)"
+                  />
 
-                {brandSearching && <div>Searching...</div>}
-                {brandResults.length > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    background: 'white',
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    marginTop: '4px',
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    zIndex: 1000,
-                    width: 'calc(100% - 40px)'
-                  }}>
-                    {brandResults.map(brand => (
-                      <div
-                        key={brand.id}
-                        onClick={() => handleSelectBrand(brand)}
-                        style={{
-                          padding: '8px 12px',
-                          cursor: 'pointer',
-                          borderBottom: '1px solid #eee'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                      >
-                        <strong>{brand.name} (ID: {brand.vinted_id})</strong>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  {brandSearching && <div>Searching...</div>}
+                  {brandResults.length > 0 && (
+                    <div className="brand-results">
+                      {brandResults.map(brand => (
+                        <div
+                          key={brand.id}
+                          className="brand-result"
+                          onClick={() => handleSelectBrand(brand)}
+                        >
+                          <strong>{brand.name} (ID: {brand.vinted_id})</strong>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </>
             )}
           </div>
@@ -488,34 +458,20 @@ export default function CreateAlertPage() {
             <div className="form-group">
               <label>Sizes (Optional)</label>
 
-              {loadingSizes && <div style={{ marginBottom: '10px' }}>Loading sizes...</div>}
+              {loadingSizes && <div className="spaced-block">Loading sizes...</div>}
 
               {selectedSizes.length > 0 && (
-                <div style={{ marginBottom: '10px' }}>
+                <div className="tag-list">
                   {selectedSizes.map(size => (
                     <span
                       key={size.id}
-                      style={{
-                        display: 'inline-block',
-                        background: '#e0e0e0',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        marginRight: '8px',
-                        marginBottom: '8px'
-                      }}
+                      className="tag-pill"
                     >
                       {size.name} (ID: {size.id})
                       <button
                         type="button"
                         onClick={() => setSelectedSizes(prev => prev.filter(s => s.id !== size.id))}
-                        style={{
-                          marginLeft: '8px',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: 0,
-                          color: '#666'
-                        }}
+                        className="tag-remove"
                       >
                         ×
                       </button>

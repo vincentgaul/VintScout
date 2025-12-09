@@ -62,7 +62,7 @@ export default function AlertDetailPage() {
 
               return (
                 <li key={item.id} className="item-card">
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  <div className="item-row">
                     {/* Thumbnail */}
                     {item.image_url ? (
                       <img
@@ -78,8 +78,8 @@ export default function AlertDetailPage() {
                     )}
 
                     {/* Item details */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <h4 style={{ marginTop: 0 }}>{item.title}</h4>
+                    <div className="item-info">
+                      <h4 className="item-title">{item.title}</h4>
                       {item.brand_name && <p><strong>Brand:</strong> {item.brand_name}</p>}
                       {item.size && <p><strong>Size:</strong> {item.size}</p>}
                       {item.condition && <p><strong>Condition:</strong> {item.condition}</p>}

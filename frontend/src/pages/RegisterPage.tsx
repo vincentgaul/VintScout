@@ -35,7 +35,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="card" style={{ maxWidth: '400px', margin: '50px auto' }}>
+    <div className="card auth-card">
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -71,7 +71,7 @@ export default function RegisterPage() {
           {loading ? 'Registering...' : 'Register'}
         </button>
       </form>
-      <p style={{ marginTop: '20px' }}>
+      <p className="auth-footer">
         Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>

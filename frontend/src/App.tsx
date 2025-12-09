@@ -56,64 +56,26 @@ function App() {
   return (
     <>
       {isAuthenticated && (
-        <nav
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '8px',
-            padding: '10px'
-          }}
-        >
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <nav className="app-nav">
+          <div className="nav-links">
             <Link to="/alerts">My Alerts</Link>
             <Link to="/alerts/new">Create Alert</Link>
           </div>
           {currentUser && (
-            <div style={{ position: 'relative' }}>
+            <div className="user-menu">
               <button
+                className="user-button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowDropdown(!showDropdown);
-                }}
-                style={{
-                  cursor: 'pointer',
-                  maxWidth: '180px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap'
                 }}
                 title={currentUser.email}
               >
                 {currentUser.email}
               </button>
               {showDropdown && (
-                <div style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 'calc(100% + 4px)',
-                  background: 'white',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  minWidth: '150px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  zIndex: 1000
-                }}>
-                  <button
-                    onClick={handleLogout}
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '10px 15px',
-                      border: 'none',
-                      background: 'none',
-                      cursor: 'pointer',
-                      color: 'black'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
-                  >
+                <div className="user-dropdown">
+                  <button className="dropdown-item" onClick={handleLogout}>
                     Logout
                   </button>
                 </div>

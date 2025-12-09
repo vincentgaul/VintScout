@@ -31,7 +31,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   };
 
   return (
-    <div className="card" style={{ maxWidth: '400px', margin: '50px auto' }}>
+    <div className="card auth-card">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -57,7 +57,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
-      <p style={{ marginTop: '20px' }}>
+      <p className="auth-footer">
         Don't have an account? <Link to="/register">Register</Link>
       </p>
     </div>

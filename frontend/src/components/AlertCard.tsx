@@ -33,29 +33,22 @@ export default function AlertCard({
 
   return (
     <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-        <div style={{ flex: 1 }}>
-          <p style={{ margin: 0 }}><strong>Alert Name:</strong> {alert.name}</p>
+      <div className="alert-card-header">
+        <div className="alert-card-info">
+          <p><strong>Alert Name:</strong> {alert.name}</p>
           {itemsCount !== undefined && (
-            <p style={{ margin: '5px 0 0 0' }}><strong>Items Found:</strong> {itemsCount}</p>
+            <p><strong>Items Found:</strong> {itemsCount}</p>
           )}
-          <p style={{ margin: '5px 0 0 0' }}><strong>Check Interval:</strong> {alert.check_interval_minutes} minutes</p>
-          <p style={{ margin: '5px 0 0 0' }}><strong>Status:</strong> {getStatusText()}</p>
-          <p style={{ margin: '5px 0 0 0' }}>
+          <p><strong>Check Interval:</strong> {alert.check_interval_minutes} minutes</p>
+          <p><strong>Status:</strong> {getStatusText()}</p>
+          <p>
             <strong>Last Checked:</strong>{' '}
             {alert.last_checked_at ? new Date(alert.last_checked_at).toLocaleString() : '-'}
           </p>
         </div>
         <button
+          className="toggle-details-btn"
           onClick={() => setIsExpanded(!isExpanded)}
-          style={{
-            background: '#f0f0f0',
-            color: '#333',
-            padding: '6px 12px',
-            fontSize: '12px',
-            border: '1px solid #ddd',
-            flexShrink: 0
-          }}
         >
           {isExpanded ? '▼ Hide Details' : '▶ Show Details'}
         </button>
@@ -114,7 +107,7 @@ export default function AlertCard({
             </button>
           )}
           {onDelete && (
-            <button onClick={onDelete} style={{ background: '#dc3545' }}>
+            <button onClick={onDelete} className="danger-btn">
               Delete
             </button>
           )}
