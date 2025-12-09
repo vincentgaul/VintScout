@@ -38,31 +38,31 @@ export default function AlertDetailPage() {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (error) return <div className="text-red-600 text-sm">{error}</div>;
   if (!alert) return <div>Alert not found</div>;
 
   return (
-    <div>
-      <Link to="/alerts">← Back to Alerts</Link>
+    <div className="space-y-4">
+      <Link to="/alerts" className="text-blue-600">← Back to Alerts</Link>
 
       <AlertCard alert={alert} itemsCount={alert.total_found_count} />
 
       <h2>Found Items</h2>
 
       {items.length === 0 ? (
-        <div className="card">
+        <div className="bg-white rounded-lg shadow p-4">
           <p>No items found yet. The alert will check for new items every {alert.check_interval_minutes} minutes.</p>
         </div>
       ) : (
         <>
-          <ul className="item-list">
+          <ul className="space-y-3">
             {items.map(item => {
               const currencyCode = item.currency || alert.currency;
               const symbol = getCurrencySymbol(currencyCode);
 
               return (
-                <li key={item.id} className="item-card">
-                  <div className="item-row">
+                <li key={item.id} className="bg-white rounded-lg shadow p-4">
+                  <div className="flex gap-4 items-start">
                     {/* Thumbnail */}
                     {item.image_url ? (
                       <img
@@ -78,8 +78,8 @@ export default function AlertDetailPage() {
                     )}
 
                     {/* Item details */}
-                    <div className="item-info">
-                      <h4 className="item-title">{item.title}</h4>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <h4 className="text-lg font-semibold">{item.title}</h4>
                       {item.brand_name && <p><strong>Brand:</strong> {item.brand_name}</p>}
                       {item.size && <p><strong>Size:</strong> {item.size}</p>}
                       {item.condition && <p><strong>Condition:</strong> {item.condition}</p>}
@@ -90,7 +90,7 @@ export default function AlertDetailPage() {
                       </p>
                       <p><strong>Found:</strong> {new Date(item.found_at).toLocaleString()}</p>
                       <p>
-                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                        <a className="text-blue-600" href={item.url} target="_blank" rel="noopener noreferrer">
                           View on Vinted →
                         </a>
                       </p>
@@ -101,15 +101,17 @@ export default function AlertDetailPage() {
             })}
           </ul>
 
-          <div className="pagination">
+          <div className="flex justify-center items-center gap-4 mt-6 bg-white p-4 rounded shadow">
             <button
+              className="px-3 py-1 border rounded"
               onClick={() => setPage(p => p - 1)}
               disabled={page === 1}
             >
               ← Previous
             </button>
-            <span>Page {page}</span>
+            <span className="font-medium">Page {page}</span>
             <button
+              className="px-3 py-1 border rounded"
               onClick={() => setPage(p => p + 1)}
               disabled={items.length < itemsPerPage}
             >

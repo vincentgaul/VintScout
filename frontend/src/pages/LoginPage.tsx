@@ -7,6 +7,7 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
+  const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,33 +32,35 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
   };
 
   return (
-    <div className="card auth-card">
+    <div className="bg-white rounded-lg shadow p-6 max-w-md mx-auto mt-12">
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
+        <div className="space-y-2">
           <label>Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className={inputClass}
           />
         </div>
-        <div className="form-group">
+        <div className="space-y-2">
           <label>Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className={inputClass}
           />
         </div>
-        {error && <div className="error">{error}</div>}
-        <button type="submit" disabled={loading}>
+        {error && <div className="text-red-600 text-sm mt-2">{error}</div>}
+        <button type="submit" disabled={loading} className="mt-2 w-full bg-blue-600 text-white py-2 rounded disabled:bg-gray-400">
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
-      <p className="auth-footer">
+      <p className="text-sm mt-5 text-center">
         Don't have an account? <Link to="/register">Register</Link>
       </p>
     </div>

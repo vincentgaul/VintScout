@@ -32,9 +32,9 @@ export default function AlertCard({
   const currencySymbol = getCurrencySymbol(alert.currency);
 
   return (
-    <div className="card">
-      <div className="alert-card-header">
-        <div className="alert-card-info">
+    <div className="bg-white rounded-lg shadow p-4">
+      <div className="flex justify-between items-start mb-3 gap-3">
+        <div className="space-y-1">
           <p><strong>Alert Name:</strong> {alert.name}</p>
           {itemsCount !== undefined && (
             <p><strong>Items Found:</strong> {itemsCount}</p>
@@ -47,7 +47,7 @@ export default function AlertCard({
           </p>
         </div>
         <button
-          className="toggle-details-btn"
+          className="border px-3 py-1 rounded text-sm bg-gray-100"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? '▼ Hide Details' : '▶ Show Details'}
@@ -97,17 +97,19 @@ export default function AlertCard({
       )}
 
       {showActions && (
-        <div className="actions">
+        <div className="mt-4 pt-4 border-t flex flex-wrap gap-2">
           {onViewItems && (
-            <button onClick={onViewItems}>View Items</button>
+            <button onClick={onViewItems} className="bg-blue-600 text-white px-3 py-1 rounded">
+              View Items
+            </button>
           )}
           {onToggleActive && (
-            <button onClick={onToggleActive}>
+            <button onClick={onToggleActive} className="bg-gray-200 px-3 py-1 rounded">
               {alert.is_active ? 'Deactivate' : 'Activate'}
             </button>
           )}
           {onDelete && (
-            <button onClick={onDelete} className="danger-btn">
+            <button onClick={onDelete} className="bg-red-600 text-white px-3 py-1 rounded">
               Delete
             </button>
           )}

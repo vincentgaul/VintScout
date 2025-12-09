@@ -41,6 +41,8 @@ const findCategoryById = (categories: Category[], id: string): Category | undefi
 };
 
 const DEFAULT_COUNTRY_CODE = 'fr';
+const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200';
+const selectClass = inputClass;
 
 export default function CreateAlertPage() {
   const defaultCurrency = getCurrencyForCountry(DEFAULT_COUNTRY_CODE);
@@ -227,12 +229,12 @@ export default function CreateAlertPage() {
   };
 
   return (
-    <div>
-      <h1>Create New Alert</h1>
+    <div className="max-w-4xl mx-auto space-y-6">
+      <h1 className="text-2xl font-semibold">Create New Alert</h1>
 
-      <div className="card">
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
+      <div className="bg-white rounded-lg shadow p-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-2">
             <label>Alert Name *</label>
             <input
               type="text"
@@ -240,15 +242,17 @@ export default function CreateAlertPage() {
               onChange={(e) => handleChange('name', e.target.value)}
               placeholder="e.g., Nike Sneakers Alert"
               required
+              className={inputClass}
             />
           </div>
 
-          <div className="form-group">
+          <div className="space-y-2">
             <label>Country Code *</label>
             <select
               value={formData.country_code}
               onChange={(e) => handleChange('country_code', e.target.value)}
               required
+              className={selectClass}
             >
               <option value="at">Austria (vinted.at)</option>
               <option value="be">Belgium (vinted.be)</option>
@@ -278,20 +282,21 @@ export default function CreateAlertPage() {
             </select>
           </div>
 
-          <div className="form-group">
+          <div className="space-y-2">
             <label>Search Text</label>
             <input
               type="text"
               value={formData.search_text}
               onChange={(e) => handleChange('search_text', e.target.value)}
               placeholder="e.g., Nike sneakers size 42"
+              className={inputClass}
             />
           </div>
 
-          <div className="form-group">
-            <div className="field-label-row">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <span>Categories (Optional)</span>
-              <label className="toggle-label">
+              <label className="text-sm font-normal inline-flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={useCategoryIds}
@@ -302,7 +307,7 @@ export default function CreateAlertPage() {
             </div>
 
             {useCategoryIds ? (
-              <div>
+              <div className="space-y-1">
                 <input
                   type="text"
                   placeholder="Comma-separated category IDs (e.g., 1193,1920)"
@@ -315,17 +320,18 @@ export default function CreateAlertPage() {
                       catalog_names: value ? `IDs: ${value}` : undefined
                     }));
                   }}
+                  className={inputClass}
                 />
-                <small className="inline-note">Paste Vinted catalog IDs when you already know them.</small>
+                <small className="text-xs text-gray-500">Paste Vinted catalog IDs when you already know them.</small>
               </div>
             ) : (
-              <div className="mb-4">
+              <div>
                 {loadingTree ? (
                   <div className="text-sm text-gray-500 p-4 border rounded bg-gray-50 text-center">
                     Loading categories...
                   </div>
                 ) : (
-                  <div className="tree-wrapper">
+                  <div className="border rounded p-2 bg-white max-h-96 overflow-y-auto">
                     <CheckboxTree
                       nodes={transformCategoriesToNodes(treeCategories)}
                       checked={checkedCategories}
@@ -351,7 +357,7 @@ export default function CreateAlertPage() {
             )}
           </div>
 
-          <div className="form-group">
+          <div className="space-y-2">
             <label>Price Min ({getCurrencyLabel(formData.currency)})</label>
             <input
               type="number"
@@ -359,10 +365,11 @@ export default function CreateAlertPage() {
               value={formData.price_min || ''}
               onChange={(e) => handleChange('price_min', e.target.value ? parseFloat(e.target.value) : undefined)}
               placeholder="0.00"
+              className={inputClass}
             />
           </div>
 
-          <div className="form-group">
+          <div className="space-y-2">
             <label>Price Max ({getCurrencyLabel(formData.currency)})</label>
             <input
               type="number"
@@ -370,13 +377,14 @@ export default function CreateAlertPage() {
               value={formData.price_max || ''}
               onChange={(e) => handleChange('price_max', e.target.value ? parseFloat(e.target.value) : undefined)}
               placeholder="100.00"
+              className={inputClass}
             />
           </div>
 
-          <div className="form-group">
-            <div className="field-label-row">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
               <span>Brands (Optional)</span>
-              <label className="toggle-label">
+              <label className="text-sm font-normal inline-flex items-center gap-2">
                 <input
                   type="checkbox"
                   checked={useBrandIds}
@@ -387,7 +395,7 @@ export default function CreateAlertPage() {
             </div>
 
             {useBrandIds ? (
-              <div>
+              <div className="space-y-1">
                 <input
                   type="text"
                   placeholder="Comma-separated brand IDs (e.g., 53,14)"
@@ -400,23 +408,24 @@ export default function CreateAlertPage() {
                       brand_names: value ? `IDs: ${value}` : undefined
                     }));
                   }}
+                  className={inputClass}
                 />
-                <small className="inline-note">Enter numeric brand IDs directly.</small>
+                <small className="text-xs text-gray-500">Enter numeric brand IDs directly.</small>
               </div>
             ) : (
               <>
                 {selectedBrands.length > 0 && (
-                  <div className="tag-list">
+                  <div className="flex flex-wrap gap-2">
                     {selectedBrands.map(brand => (
                       <span
                         key={brand.id}
-                        className="tag-pill"
+                        className="inline-flex items-center bg-gray-200 rounded px-2 py-1 text-sm"
                       >
                         {brand.name} (ID: {brand.vinted_id})
                         <button
                           type="button"
                           onClick={() => handleRemoveBrand(brand.id)}
-                          className="tag-remove"
+                          className="ml-2 text-gray-600 hover:text-gray-800"
                         >
                           ×
                         </button>
@@ -425,21 +434,22 @@ export default function CreateAlertPage() {
                   </div>
                 )}
 
-                <div className="brand-search-wrapper">
+                <div className="relative">
                   <input
                     type="text"
                     value={brandQuery}
                     onChange={(e) => handleBrandSearch(e.target.value)}
                     placeholder="Search brands (e.g., nike, zara, adidas)"
+                    className={inputClass}
                   />
 
                   {brandSearching && <div>Searching...</div>}
                   {brandResults.length > 0 && (
-                    <div className="brand-results">
+                    <div className="absolute left-0 right-0 bg-white border rounded mt-1 max-h-52 overflow-y-auto z-10 shadow">
                       {brandResults.map(brand => (
                         <div
                           key={brand.id}
-                          className="brand-result"
+                          className="px-3 py-2 cursor-pointer border-b hover:bg-gray-50"
                           onClick={() => handleSelectBrand(brand)}
                         >
                           <strong>{brand.name} (ID: {brand.vinted_id})</strong>
@@ -455,23 +465,23 @@ export default function CreateAlertPage() {
           {/* TEMPORARILY DISABLED - Size IDs vary by gender (men's 42 ≠ women's 42) */}
           {/* Size selection will be re-enabled once the gender context issue is resolved */}
           {/* {availableSizes.length > 0 && (
-            <div className="form-group">
+            <div className="space-y-2">
               <label>Sizes (Optional)</label>
 
-              {loadingSizes && <div className="spaced-block">Loading sizes...</div>}
+              {loadingSizes && <div className="mb-2">Loading sizes...</div>}
 
               {selectedSizes.length > 0 && (
-                <div className="tag-list">
+                <div className="flex flex-wrap gap-2">
                   {selectedSizes.map(size => (
                     <span
                       key={size.id}
-                      className="tag-pill"
+                      className="inline-flex items-center bg-gray-200 rounded px-2 py-1 text-sm"
                     >
                       {size.name} (ID: {size.id})
                       <button
                         type="button"
                         onClick={() => setSelectedSizes(prev => prev.filter(s => s.id !== size.id))}
-                        className="tag-remove"
+                        className="ml-2 text-gray-600 hover:text-gray-800"
                       >
                         ×
                       </button>
@@ -490,6 +500,7 @@ export default function CreateAlertPage() {
                   }
                 }}
                 disabled={loadingSizes}
+                className={selectClass}
               >
                 <option value="">Select a size...</option>
                 {availableSizes
@@ -504,12 +515,13 @@ export default function CreateAlertPage() {
             </div>
           )} */}
 
-          <div className="form-group">
+          <div className="space-y-2">
             <label>Check Interval (minutes) *</label>
             <select
               value={formData.check_interval_minutes}
               onChange={(e) => handleChange('check_interval_minutes', parseInt(e.target.value))}
               required
+              className={selectClass}
             >
               <option value={1}>1 minute</option>
               <option value={5}>5 minutes</option>
@@ -519,9 +531,13 @@ export default function CreateAlertPage() {
             </select>
           </div>
 
-          {error && <div className="error">{error}</div>}
+          {error && <div className="text-red-600 text-sm">{error}</div>}
 
-          <button type="submit" disabled={loading}>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 rounded disabled:bg-gray-400"
+          >
             {loading ? 'Creating...' : 'Create Alert'}
           </button>
         </form>

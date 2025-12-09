@@ -56,15 +56,15 @@ function App() {
   return (
     <>
       {isAuthenticated && (
-        <nav className="app-nav">
-          <div className="nav-links">
+        <nav className="bg-white shadow px-5 py-3 mb-6 flex flex-wrap items-center justify-between gap-3 rounded">
+          <div className="flex gap-4 flex-wrap text-blue-600 font-medium">
             <Link to="/alerts">My Alerts</Link>
             <Link to="/alerts/new">Create Alert</Link>
           </div>
           {currentUser && (
-            <div className="user-menu">
+            <div className="relative">
               <button
-                className="user-button"
+                className="text-blue-600 font-medium max-w-[200px] truncate"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowDropdown(!showDropdown);
@@ -74,8 +74,11 @@ function App() {
                 {currentUser.email}
               </button>
               {showDropdown && (
-                <div className="user-dropdown">
-                  <button className="dropdown-item" onClick={handleLogout}>
+                <div className="absolute right-0 mt-1 bg-white border rounded shadow z-10 min-w-[150px]">
+                  <button
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    onClick={handleLogout}
+                  >
                     Logout
                   </button>
                 </div>
@@ -85,7 +88,7 @@ function App() {
         </nav>
       )}
 
-      <div className="container">
+      <div className="max-w-5xl mx-auto px-4 pb-10">
         <Routes>
           <Route path="/login" element={
             isAuthenticated ? <Navigate to="/alerts" /> : <LoginPage onLogin={() => setIsAuthenticated(true)} />

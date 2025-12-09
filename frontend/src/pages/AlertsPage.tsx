@@ -46,18 +46,21 @@ export default function AlertsPage() {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div className="error">{error}</div>;
+  if (error) return <div className="text-red-600 text-sm">{error}</div>;
 
   return (
-    <div>
-      <h1>My Alerts</h1>
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold">My Alerts</h1>
 
       {alerts.length === 0 ? (
-        <div className="card">
-          <p>No alerts yet. <Link to="/alerts/new">Create your first alert</Link></p>
+        <div className="bg-white rounded-lg shadow p-5">
+          <p>
+            No alerts yet.{' '}
+            <Link className="text-blue-600" to="/alerts/new">Create your first alert</Link>
+          </p>
         </div>
       ) : (
-        <div className="alert-list">
+        <div className="flex flex-col gap-4">
           {alerts.map(alert => (
             <AlertCard
               key={alert.id}
