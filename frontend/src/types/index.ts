@@ -17,6 +17,7 @@ export interface Alert {
   brand_names?: string;
   catalog_ids?: string;
   catalog_names?: string;
+  conditions?: string;
   sizes?: string;
   price_min?: number;
   price_max?: number;
@@ -39,6 +40,7 @@ export interface AlertCreate {
   brand_names?: string;
   catalog_ids?: string;
   catalog_names?: string;
+  conditions?: string;
   sizes?: string;
   price_min?: number;
   price_max?: number;
@@ -79,5 +81,10 @@ export interface Brand {
 
 export interface Size {
   id: string;
+  name: string;
+}
+
+export interface Condition {
+  id: number;
   name: string;
 }

@@ -104,3 +104,8 @@ class Alert(Base):
     def size_list(self):
         """Convert comma-separated sizes to list"""
         return [s.strip() for s in self.sizes.split(",")] if self.sizes else []
+
+    @property
+    def condition_list(self):
+        """Convert comma-separated conditions to list"""
+        return [c.strip() for c in self.conditions.split(",")] if self.conditions else []

@@ -314,6 +314,7 @@ class VintedClient:
         size_ids: Optional[List[str]] = None,
         price_from: Optional[float] = None,
         price_to: Optional[float] = None,
+        condition_ids: Optional[List[str]] = None,
         currency: str = "EUR",
         order: str = "newest_first",
         per_page: int = 20,
@@ -329,6 +330,7 @@ class VintedClient:
             size_ids: List of size IDs to filter
             price_from: Minimum price
             price_to: Maximum price
+            condition_ids: Condition/status IDs
             currency: Currency code (EUR, USD, etc.)
             order: Sort order (newest_first, price_low_to_high, price_high_to_low, relevance)
             per_page: Results per page (max 96)
@@ -373,6 +375,9 @@ class VintedClient:
 
         if price_to is not None:
             params["price_to"] = price_to
+
+        if condition_ids:
+            params["status_ids[]"] = condition_ids
 
         response = self._make_request("GET", "/api/v2/catalog/items", params=params)
 

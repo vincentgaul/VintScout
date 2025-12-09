@@ -16,6 +16,7 @@ import {
 import * as api from '../services/api';
 import type { AlertCreate, Brand, Category } from '../types';
 import { getCurrencyForCountry, getCurrencyLabel } from '../constants/currency';
+import { useConditions } from '../hooks/useConditions';
 
 // Helper to transform Category[] to CheckboxTree nodes
 const transformCategoriesToNodes = (categories: Category[]): any[] => {
@@ -68,6 +69,8 @@ export default function CreateAlertPage() {
   const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
   const [brandSearching, setBrandSearching] = useState(false);
   const [useBrandIds, setUseBrandIds] = useState(false);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+  const [useConditionIds, setUseConditionIds] = useState(false);
 
   // Category Tree state
   const [treeCategories, setTreeCategories] = useState<Category[]>([]);
@@ -113,6 +116,16 @@ export default function CreateAlertPage() {
   }, [checkedCategories, treeCategories]);
 
   const [sizeIdsInput, setSizeIdsInput] = useState('');
+  const [conditionIdsInput, setConditionIdsInput] = useState('');
+  const conditions = useConditions();
+
+  useEffect(() => {
+    if (!useConditionIds && formData.conditions) {
+      const ids = formData.conditions.split(',').map(id => id.trim()).filter(Boolean);
+      const known = ids.filter(id => conditions.some(opt => opt.id.toString() === id));
+      setSelectedConditions(known);
+    }
+  }, [formData.conditions, useConditionIds, conditions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -318,6 +331,81 @@ export default function CreateAlertPage() {
                       }}
                     />
                   </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span>Conditions (Optional)</span>
+              <label className="text-sm font-normal inline-flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={useConditionIds}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setUseConditionIds(checked);
+                    if (checked) {
+                      setConditionIdsInput(formData.conditions || selectedConditions.join(','));
+                    } else {
+                      const ids = (formData.conditions || '').split(',').map(id => id.trim()).filter(Boolean);
+                      setSelectedConditions(ids.filter(id => conditions.some(opt => opt.id.toString() === id)));
+                    }
+                  }}
+                />
+                Enter IDs
+              </label>
+            </div>
+
+            {useConditionIds ? (
+              <div className="space-y-1">
+                <input
+                  type="text"
+                  placeholder="Comma-separated condition IDs (e.g., 1,2)"
+                  value={conditionIdsInput}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setConditionIdsInput(value);
+                    setFormData(prev => ({
+                      ...prev,
+                      conditions: value || undefined
+                    }));
+                  }}
+                  className={inputClass}
+                />
+                <small className="text-xs text-gray-500">Use numeric IDs to match Vinted statuses.</small>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {conditions.length === 0 ? (
+                  <div className="text-sm text-gray-500">Loading conditions…</div>
+                ) : (
+                  conditions.map(option => {
+                    const checked = selectedConditions.includes(option.id.toString());
+                    return (
+                      <button
+                        type="button"
+                        key={option.id}
+                        className={`px-3 py-1 rounded border text-sm ${checked ? 'bg-blue-100 border-blue-400 text-blue-700' : 'bg-white border-gray-300 text-gray-700'}`}
+                        onClick={() => {
+                          setSelectedConditions(prev => {
+                            const id = option.id.toString();
+                            const next = prev.includes(id)
+                              ? prev.filter(x => x !== id)
+                              : [...prev, id];
+                            setFormData(form => ({
+                              ...form,
+                              conditions: next.length ? next.join(',') : undefined
+                            }));
+                            return next;
+                          });
+                        }}
+                      >
+                        {option.name}
+                      </button>
+                    );
+                  })
                 )}
               </div>
             )}

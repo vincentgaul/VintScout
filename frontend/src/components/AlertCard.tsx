@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Alert } from '../types';
 import { getCurrencySymbol } from '../constants/currency';
+import { useConditions } from '../hooks/useConditions';
 
 interface AlertCardProps {
   alert: Alert;
@@ -30,6 +31,11 @@ export default function AlertCard({
   const hasPriceMin = alert.price_min !== undefined && alert.price_min !== null;
   const hasPriceMax = alert.price_max !== undefined && alert.price_max !== null;
   const currencySymbol = getCurrencySymbol(alert.currency);
+  const conditions = useConditions();
+  const conditionMap = conditions.reduce<Record<number, string>>((acc, condition) => {
+    acc[condition.id] = condition.name;
+    return acc;
+  }, {});
 
   return (
     <div className="bg-white rounded-lg shadow p-4">
@@ -84,6 +90,15 @@ export default function AlertCard({
         <p>
           <strong>Sizes:</strong>{' '}
           {alert.sizes.split(',').map((sizeId: string) => sizeId.trim()).join(', ')}
+        </p>
+      )}
+      {alert.conditions && (
+        <p>
+          <strong>Conditions:</strong>{' '}
+          {alert.conditions.split(',').map((id: string) => {
+            const key = parseInt(id.trim(), 10);
+            return conditionMap[key] || id.trim();
+          }).join(', ')}
         </p>
       )}
       {(hasPriceMin || hasPriceMax) && (

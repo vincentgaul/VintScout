@@ -19,6 +19,7 @@ from backend.models.brand import Brand
 from backend.models.category import Category
 from backend.models.item_history import ItemHistory
 from backend.models.size import Size
+from backend.models.condition import Condition
 
 # Export all models for easy importing elsewhere
 __all__ = [
@@ -28,5 +29,6 @@ __all__ = [
     "Brand",
     "Category",
     "ItemHistory",
-    "Size"
+    "Size",
+    "Condition"
 ]

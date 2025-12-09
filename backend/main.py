@@ -72,7 +72,8 @@ from backend.api.routes import (
     brands_router,
     categories_router,
     history_router,
-    sizes_router
+    sizes_router,
+    conditions_router
 )
 
 # Register API routers
@@ -82,6 +83,7 @@ app.include_router(brands_router, prefix="/api")
 app.include_router(categories_router, prefix="/api")
 app.include_router(history_router, prefix="/api")
 app.include_router(sizes_router, prefix="/api")
+app.include_router(conditions_router, prefix="/api")
 
 @app.get("/health")
 def health_check():

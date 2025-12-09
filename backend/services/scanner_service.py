@@ -90,6 +90,7 @@ class ScannerService:
             brand_ids = alert.brand_list if alert.brand_ids else None
             catalog_ids = alert.catalog_list if alert.catalog_ids else None
             size_ids = alert.size_list if alert.sizes else None
+            condition_ids = alert.condition_list if alert.conditions else None
 
             # Search Vinted
             with VintedClient(alert.country_code) as client:
@@ -100,6 +101,7 @@ class ScannerService:
                     size_ids=size_ids,
                     price_from=alert.price_min,
                     price_to=alert.price_max,
+                    condition_ids=condition_ids,
                     currency=alert.currency,
                     order="newest_first",  # Always check newest first
                     per_page=20  # Check first page only for performance

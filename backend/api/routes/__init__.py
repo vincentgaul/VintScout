@@ -18,6 +18,7 @@ from backend.api.routes.brands import router as brands_router
 from backend.api.routes.categories import router as categories_router
 from backend.api.routes.history import router as history_router
 from backend.api.routes.sizes import router as sizes_router
+from backend.api.routes.conditions import router as conditions_router
 
 __all__ = [
     "auth_router",
@@ -25,5 +26,6 @@ __all__ = [
     "brands_router",
     "categories_router",
     "history_router",
-    "sizes_router"
+    "sizes_router",
+    "conditions_router"
 ]

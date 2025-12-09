@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse, Alert, AlertCreate, ItemHistory, Category, Brand, User, Size } from '../types';
+import type { AuthResponse, Alert, AlertCreate, ItemHistory, Category, Brand, User, Size, Condition } from '../types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -58,3 +58,7 @@ export const searchBrands = (q: string, countryCode: string) =>
 // Sizes
 export const getSizes = (catalogIds: string, catalogNames: string) =>
   api.get<Size[]>('/sizes', { params: { catalog_ids: catalogIds, catalog_names: catalogNames } }).then(res => res.data);
+
+// Conditions
+export const getConditions = () =>
+  api.get<Condition[]>('/conditions').then(res => res.data);
