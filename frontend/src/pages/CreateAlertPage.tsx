@@ -1,49 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import CheckboxTree from 'react-checkbox-tree';
-import 'react-checkbox-tree/lib/react-checkbox-tree.css';
-import {
-  FaCheckSquare,
-  FaSquare,
-  FaChevronRight,
-  FaChevronDown,
-  FaPlusSquare,
-  FaMinusSquare,
-  FaFolder,
-  FaFolderOpen,
-  FaFile
-} from 'react-icons/fa';
 import * as api from '../services/api';
-import type { AlertCreate, Brand, Category } from '../types';
-import { getCurrencyForCountry, getCurrencyLabel } from '../constants/currency';
-import { useConditions } from '../hooks/useConditions';
-
-// Helper to transform Category[] to CheckboxTree nodes
-const transformCategoriesToNodes = (categories: Category[]): any[] => {
-  return categories.map(cat => ({
-    value: cat.id,
-    label: `${cat.name} (ID: ${cat.vinted_id})`,
-    children: cat.children && cat.children.length > 0
-      ? transformCategoriesToNodes(cat.children)
-      : undefined
-  }));
-};
-
-// Helper to find category by ID (recursive)
-const findCategoryById = (categories: Category[], id: string): Category | undefined => {
-  for (const cat of categories) {
-    if (cat.id === id) return cat;
-    if (cat.children) {
-      const found = findCategoryById(cat.children, id);
-      if (found) return found;
-    }
-  }
-  return undefined;
-};
-
-const DEFAULT_COUNTRY_CODE = 'fr';
-const inputClass = 'w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200';
-const selectClass = inputClass;
+import type { AlertCreate } from '../types';
+import { getCurrencyForCountry } from '../constants/currency';
+import { inputClass, selectClass, DEFAULT_COUNTRY_CODE } from '../constants/formStyles';
+import {
+  BrandSelector,
+  CategorySelector,
+  ConditionSelector,
+  PriceRangeInput
+} from '../components/alert-form';
 
 export default function CreateAlertPage() {
   const defaultCurrency = getCurrencyForCountry(DEFAULT_COUNTRY_CODE);
@@ -63,69 +29,11 @@ export default function CreateAlertPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Brand search state
-  const [brandQuery, setBrandQuery] = useState('');
-  const [brandResults, setBrandResults] = useState<Brand[]>([]);
-  const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
-  const [brandSearching, setBrandSearching] = useState(false);
+  // Toggle states for manual ID entry
   const [useBrandIds, setUseBrandIds] = useState(false);
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [useConditionIds, setUseConditionIds] = useState(false);
-
-  // Category Tree state
-  const [treeCategories, setTreeCategories] = useState<Category[]>([]);
-  const [loadingTree, setLoadingTree] = useState(false);
-  const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const [useCategoryIds, setUseCategoryIds] = useState(false);
-
-  // Fetch category tree when country changes
-  useEffect(() => {
-    const fetchCategories = async () => {
-      setLoadingTree(true);
-      try {
-        const categories = await api.getCategories(formData.country_code);
-        setTreeCategories(categories);
-      } catch (error) {
-        console.error('Failed to fetch category tree:', error);
-        setTreeCategories([]);
-      } finally {
-        setLoadingTree(false);
-      }
-    };
-
-    fetchCategories();
-  }, [formData.country_code]);
-
-  // Update formData when checked categories change
-  useEffect(() => {
-    if (treeCategories.length === 0) return;
-
-    const selectedCats = checkedCategories
-      .map(id => findCategoryById(treeCategories, id))
-      .filter((c): c is Category => !!c);
-
-    const catalogIds = selectedCats.map(c => c.vinted_id).join(',');
-    const catalogNames = selectedCats.map(c => c.name).join(', ');
-
-    setFormData(prev => ({
-      ...prev,
-      catalog_ids: catalogIds,
-      catalog_names: catalogNames
-    }));
-  }, [checkedCategories, treeCategories]);
-
+  const [useConditionIds, setUseConditionIds] = useState(false);
   const [sizeIdsInput, setSizeIdsInput] = useState('');
-  const [conditionIdsInput, setConditionIdsInput] = useState('');
-  const conditions = useConditions();
-
-  useEffect(() => {
-    if (!useConditionIds && formData.conditions) {
-      const ids = formData.conditions.split(',').map(id => id.trim()).filter(Boolean);
-      const known = ids.filter(id => conditions.some(opt => opt.id.toString() === id));
-      setSelectedConditions(known);
-    }
-  }, [formData.conditions, useConditionIds, conditions]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,67 +60,13 @@ export default function CreateAlertPage() {
     });
   };
 
-  const handleBrandSearch = async (query: string) => {
-    setBrandQuery(query);
-
-    if (query.length < 2) {
-      setBrandResults([]);
-      return;
-    }
-
-    setBrandSearching(true);
-    try {
-      const results = await api.searchBrands(query, formData.country_code);
-      setBrandResults(results);
-    } catch (err) {
-      console.error('Brand search failed:', err);
-      setBrandResults([]);
-    } finally {
-      setBrandSearching(false);
-    }
-  };
-
-  const handleSelectBrand = (brand: Brand) => {
-    // Add brand if not already selected
-    if (!selectedBrands.find(b => b.id === brand.id)) {
-      const newBrands = [...selectedBrands, brand];
-      setSelectedBrands(newBrands);
-
-      // Update formData with brand IDs and names
-      const brandIds = newBrands.map(b => b.vinted_id).join(',');
-      const brandNames = newBrands.map(b => b.name).join(', ');
-      setFormData(prev => ({
-        ...prev,
-        brand_ids: brandIds,
-        brand_names: brandNames
-      }));
-    }
-
-    // Clear search
-    setBrandQuery('');
-    setBrandResults([]);
-  };
-
-  const handleRemoveBrand = (brandId: string) => {
-    const newBrands = selectedBrands.filter(b => b.id !== brandId);
-    setSelectedBrands(newBrands);
-
-    // Update formData
-    const brandIds = newBrands.map(b => b.vinted_id).join(',');
-    const brandNames = newBrands.map(b => b.name).join(', ');
-    setFormData(prev => ({
-      ...prev,
-      brand_ids: brandIds,
-      brand_names: brandNames
-    }));
-  };
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <h1 className="text-2xl font-semibold">Create New Alert</h1>
 
       <div className="bg-white rounded-lg shadow p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Alert Name */}
           <div className="space-y-2">
             <label>Alert Name *</label>
             <input
@@ -225,6 +79,7 @@ export default function CreateAlertPage() {
             />
           </div>
 
+          {/* Country Selector */}
           <div className="space-y-2">
             <label>Country Code *</label>
             <select
@@ -261,6 +116,7 @@ export default function CreateAlertPage() {
             </select>
           </div>
 
+          {/* Search Text */}
           <div className="space-y-2">
             <label>Search Text</label>
             <input
@@ -272,250 +128,58 @@ export default function CreateAlertPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span>Categories (Optional)</span>
-              <label className="text-sm font-normal inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={useCategoryIds}
-                  onChange={(e) => setUseCategoryIds(e.target.checked)}
-                />
-                Enter IDs
-              </label>
-            </div>
+          {/* Category Selector */}
+          <CategorySelector
+            countryCode={formData.country_code}
+            useCategoryIds={useCategoryIds}
+            onUseCategoryIdsChange={setUseCategoryIds}
+            catalogIds={formData.catalog_ids || ''}
+            onCatalogChange={(ids, names) => {
+              setFormData(prev => ({
+                ...prev,
+                catalog_ids: ids,
+                catalog_names: names
+              }));
+            }}
+            inputClass={inputClass}
+          />
 
-            {useCategoryIds ? (
-              <div className="space-y-1">
-                <input
-                  type="text"
-                  placeholder="Comma-separated category IDs (e.g., 1193,1920)"
-                  value={formData.catalog_ids || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData(prev => ({
-                      ...prev,
-                      catalog_ids: value,
-                      catalog_names: value ? `IDs: ${value}` : undefined
-                    }));
-                  }}
-                  className={inputClass}
-                />
-                <small className="text-xs text-gray-500">Paste Vinted catalog IDs when you already know them.</small>
-              </div>
-            ) : (
-              <div>
-                {loadingTree ? (
-                  <div className="text-sm text-gray-500 p-4 border rounded bg-gray-50 text-center">
-                    Loading categories...
-                  </div>
-                ) : (
-                  <div className="border rounded p-2 bg-white max-h-96 overflow-y-auto">
-                    <CheckboxTree
-                      nodes={transformCategoriesToNodes(treeCategories)}
-                      checked={checkedCategories}
-                      expanded={expandedCategories}
-                      onCheck={(checked) => setCheckedCategories(checked as string[])}
-                      onExpand={(expanded) => setExpandedCategories(expanded as string[])}
-                      icons={{
-                        check: <FaCheckSquare />,
-                        uncheck: <FaSquare />,
-                        halfCheck: <FaMinusSquare />,
-                        expandClose: <FaChevronRight />,
-                        expandOpen: <FaChevronDown />,
-                        expandAll: <FaPlusSquare />,
-                        collapseAll: <FaMinusSquare />,
-                        parentClose: <FaFolder />,
-                        parentOpen: <FaFolderOpen />,
-                        leaf: <FaFile />
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+          {/* Condition Selector */}
+          <ConditionSelector
+            conditions={formData.conditions}
+            useConditionIds={useConditionIds}
+            onUseConditionIdsChange={setUseConditionIds}
+            onConditionsChange={(value) => handleChange('conditions', value)}
+            inputClass={inputClass}
+          />
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span>Conditions (Optional)</span>
-              <label className="text-sm font-normal inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={useConditionIds}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setUseConditionIds(checked);
-                    if (checked) {
-                      setConditionIdsInput(formData.conditions || selectedConditions.join(','));
-                    } else {
-                      const ids = (formData.conditions || '').split(',').map(id => id.trim()).filter(Boolean);
-                      setSelectedConditions(ids.filter(id => conditions.some(opt => opt.id.toString() === id)));
-                    }
-                  }}
-                />
-                Enter IDs
-              </label>
-            </div>
+          {/* Price Range */}
+          <PriceRangeInput
+            currency={formData.currency}
+            priceMin={formData.price_min}
+            priceMax={formData.price_max}
+            onPriceMinChange={(value) => handleChange('price_min', value)}
+            onPriceMaxChange={(value) => handleChange('price_max', value)}
+            inputClass={inputClass}
+          />
 
-            {useConditionIds ? (
-              <div className="space-y-1">
-                <input
-                  type="text"
-                  placeholder="Comma-separated condition IDs (e.g., 1,2)"
-                  value={conditionIdsInput}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setConditionIdsInput(value);
-                    setFormData(prev => ({
-                      ...prev,
-                      conditions: value || undefined
-                    }));
-                  }}
-                  className={inputClass}
-                />
-                <small className="text-xs text-gray-500">Use numeric IDs to match Vinted statuses.</small>
-              </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {conditions.length === 0 ? (
-                  <div className="text-sm text-gray-500">Loading conditions…</div>
-                ) : (
-                  conditions.map(option => {
-                    const checked = selectedConditions.includes(option.id.toString());
-                    return (
-                      <button
-                        type="button"
-                        key={option.id}
-                        className={`px-3 py-1 rounded border text-sm ${checked ? 'bg-blue-100 border-blue-400 text-blue-700' : 'bg-white border-gray-300 text-gray-700'}`}
-                        onClick={() => {
-                          setSelectedConditions(prev => {
-                            const id = option.id.toString();
-                            const next = prev.includes(id)
-                              ? prev.filter(x => x !== id)
-                              : [...prev, id];
-                            setFormData(form => ({
-                              ...form,
-                              conditions: next.length ? next.join(',') : undefined
-                            }));
-                            return next;
-                          });
-                        }}
-                      >
-                        {option.name}
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            )}
-          </div>
+          {/* Brand Selector */}
+          <BrandSelector
+            countryCode={formData.country_code}
+            useBrandIds={useBrandIds}
+            onUseBrandIdsChange={setUseBrandIds}
+            brandIds={formData.brand_ids || ''}
+            onBrandIdsChange={(ids, names) => {
+              setFormData(prev => ({
+                ...prev,
+                brand_ids: ids,
+                brand_names: names
+              }));
+            }}
+            inputClass={inputClass}
+          />
 
-          <div className="space-y-2">
-            <label>Price Min ({getCurrencyLabel(formData.currency)})</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.price_min || ''}
-              onChange={(e) => handleChange('price_min', e.target.value ? parseFloat(e.target.value) : undefined)}
-              placeholder="0.00"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label>Price Max ({getCurrencyLabel(formData.currency)})</label>
-            <input
-              type="number"
-              step="0.01"
-              value={formData.price_max || ''}
-              onChange={(e) => handleChange('price_max', e.target.value ? parseFloat(e.target.value) : undefined)}
-              placeholder="100.00"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span>Brands (Optional)</span>
-              <label className="text-sm font-normal inline-flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={useBrandIds}
-                  onChange={(e) => setUseBrandIds(e.target.checked)}
-                />
-                Enter IDs
-              </label>
-            </div>
-
-            {useBrandIds ? (
-              <div className="space-y-1">
-                <input
-                  type="text"
-                  placeholder="Comma-separated brand IDs (e.g., 53,14)"
-                  value={formData.brand_ids || ''}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setFormData(prev => ({
-                      ...prev,
-                      brand_ids: value,
-                      brand_names: value ? `IDs: ${value}` : undefined
-                    }));
-                  }}
-                  className={inputClass}
-                />
-                <small className="text-xs text-gray-500">Enter numeric brand IDs directly.</small>
-              </div>
-            ) : (
-              <>
-                {selectedBrands.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {selectedBrands.map(brand => (
-                      <span
-                        key={brand.id}
-                        className="inline-flex items-center bg-gray-200 rounded px-2 py-1 text-sm"
-                      >
-                        {brand.name} (ID: {brand.vinted_id})
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveBrand(brand.id)}
-                          className="ml-2 text-gray-600 hover:text-gray-800"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={brandQuery}
-                    onChange={(e) => handleBrandSearch(e.target.value)}
-                    placeholder="Search brands (e.g., nike, zara, adidas)"
-                    className={inputClass}
-                  />
-
-                  {brandSearching && <div>Searching...</div>}
-                  {brandResults.length > 0 && (
-                    <div className="absolute left-0 right-0 bg-white border rounded mt-1 max-h-52 overflow-y-auto z-10 shadow">
-                      {brandResults.map(brand => (
-                        <div
-                          key={brand.id}
-                          className="px-3 py-2 cursor-pointer border-b hover:bg-gray-50"
-                          onClick={() => handleSelectBrand(brand)}
-                        >
-                          <strong>{brand.name} (ID: {brand.vinted_id})</strong>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
+          {/* Size Input */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-gray-500">
               <span>Sizes (Optional)</span>
@@ -531,16 +195,14 @@ export default function CreateAlertPage() {
               onChange={(e) => {
                 const value = e.target.value;
                 setSizeIdsInput(value);
-                setFormData(prev => ({
-                  ...prev,
-                  sizes: value || undefined
-                }));
+                handleChange('sizes', value || undefined);
               }}
               className={inputClass}
             />
             <small className="text-xs text-gray-500">Size lookups are incomplete, so enter ids directly for now.</small>
           </div>
 
+          {/* Check Interval */}
           <div className="space-y-2">
             <label>Check Interval (minutes) *</label>
             <select
@@ -557,8 +219,10 @@ export default function CreateAlertPage() {
             </select>
           </div>
 
+          {/* Error Message */}
           {error && <div className="text-red-600 text-sm">{error}</div>}
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
