@@ -112,41 +112,7 @@ export default function CreateAlertPage() {
     }));
   }, [checkedCategories, treeCategories]);
 
-  // TEMPORARILY DISABLED - Fetch available sizes when categories change
-  // Re-enable when size gender context issue is resolved
-  /* useEffect(() => {
-    const fetchSizes = async () => {
-      if (!formData.catalog_ids || !formData.catalog_names) {
-        setAvailableSizes([]);
-        setSelectedSizes([]);
-        return;
-      }
-
-      setLoadingSizes(true);
-      try {
-        const sizes = await api.getSizes(formData.catalog_ids, formData.catalog_names);
-        setAvailableSizes(sizes);
-        // Clear selected sizes if they're not in the new available sizes
-        setSelectedSizes(prev => prev.filter(s => sizes.some(size => size.id === s.id)));
-      } catch (error) {
-        console.error('Failed to fetch sizes:', error);
-        setAvailableSizes([]);
-      } finally {
-        setLoadingSizes(false);
-      }
-    };
-
-    fetchSizes();
-  }, [formData.catalog_ids, formData.catalog_names]); */
-
-  // TEMPORARILY DISABLED - Update formData when selected sizes change
-  /* useEffect(() => {
-    const sizeIds = selectedSizes.map(s => s.id).join(',');
-    setFormData(prev => ({
-      ...prev,
-      sizes: sizeIds || undefined
-    }));
-  }, [selectedSizes]); */
+  const [sizeIdsInput, setSizeIdsInput] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -462,58 +428,24 @@ export default function CreateAlertPage() {
             )}
           </div>
 
-          {/* TEMPORARILY DISABLED - Size IDs vary by gender (men's 42 ≠ women's 42) */}
-          {/* Size selection will be re-enabled once the gender context issue is resolved */}
-          {/* {availableSizes.length > 0 && (
-            <div className="space-y-2">
-              <label>Sizes (Optional)</label>
-
-              {loadingSizes && <div className="mb-2">Loading sizes...</div>}
-
-              {selectedSizes.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedSizes.map(size => (
-                    <span
-                      key={size.id}
-                      className="inline-flex items-center bg-gray-200 rounded px-2 py-1 text-sm"
-                    >
-                      {size.name} (ID: {size.id})
-                      <button
-                        type="button"
-                        onClick={() => setSelectedSizes(prev => prev.filter(s => s.id !== size.id))}
-                        className="ml-2 text-gray-600 hover:text-gray-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <select
-                value=""
-                onChange={(e) => {
-                  const sizeId = e.target.value;
-                  const size = availableSizes.find(s => s.id === sizeId);
-                  if (size && !selectedSizes.find(s => s.id === size.id)) {
-                    setSelectedSizes(prev => [...prev, size]);
-                  }
-                }}
-                disabled={loadingSizes}
-                className={selectClass}
-              >
-                <option value="">Select a size...</option>
-                {availableSizes
-                  .filter(size => !selectedSizes.find(s => s.id === size.id))
-                  .map(size => (
-                    <option key={size.id} value={size.id}>
-                      {size.name}
-                    </option>
-                  ))
-                }
-              </select>
-            </div>
-          )} */}
+          <div className="space-y-2">
+            <label>Sizes (Optional) — enter numeric Vinted size IDs</label>
+            <input
+              type="text"
+              placeholder="Comma-separated size IDs (e.g., 2100,2101)"
+              value={sizeIdsInput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSizeIdsInput(value);
+                setFormData(prev => ({
+                  ...prev,
+                  sizes: value || undefined
+                }));
+              }}
+              className={inputClass}
+            />
+            <small className="text-xs text-gray-500">Size lookups are incomplete, so enter ids directly for now.</small>
+          </div>
 
           <div className="space-y-2">
             <label>Check Interval (minutes) *</label>
