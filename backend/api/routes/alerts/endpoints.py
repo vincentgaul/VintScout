@@ -16,16 +16,14 @@ All endpoints require authentication (JWT token).
 Users can only access/modify their own alerts.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from typing import List
-import logging
 
 from backend.api.dependencies import get_db, get_current_user
 from backend.schemas import AlertCreate, AlertUpdate, AlertResponse
 from backend.models import User, Alert
-
-logger = logging.getLogger(__name__)
+from .helpers import get_user_alert, handle_reactivation
 
 
 router = APIRouter(prefix="/alerts", tags=["Alerts"])
@@ -139,17 +137,7 @@ def get_alert(
         401 Unauthorized: If no valid JWT token provided
         404 Not Found: If alert doesn't exist or doesn't belong to user
     """
-    alert = db.query(Alert).filter(
-        Alert.id == alert_id,
-        Alert.user_id == user.id
-    ).first()
-
-    if not alert:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Alert not found"
-        )
-
+    alert = get_user_alert(db, alert_id, user.id)
     return AlertResponse.model_validate(alert)
 
 
@@ -182,29 +170,14 @@ def update_alert(
         401 Unauthorized: If no valid JWT token provided
         404 Not Found: If alert doesn't exist or doesn't belong to user
     """
-    alert = db.query(Alert).filter(
-        Alert.id == alert_id,
-        Alert.user_id == user.id
-    ).first()
-
-    if not alert:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Alert not found"
-        )
+    alert = get_user_alert(db, alert_id, user.id)
 
     # Update only provided fields
     update_data = alert_data.model_dump(exclude_unset=True)
 
-    # Detect reactivation and reset baseline
+    # Handle reactivation if is_active changed to true
     if 'is_active' in update_data:
-        # Check if transitioning from inactive to active (reactivation)
-        if not alert.is_active and update_data['is_active']:
-            # Clear old history and reset last_checked_at for fresh baseline
-            from backend.models import ItemHistory
-            db.query(ItemHistory).filter(ItemHistory.alert_id == alert.id).delete()
-            alert.last_checked_at = None
-            logger.info(f"Alert {alert.id} reactivated - cleared history and resetting baseline")
+        handle_reactivation(db, alert, update_data['is_active'])
 
     for field, value in update_data.items():
         setattr(alert, field, value)
@@ -236,16 +209,7 @@ def delete_alert(
         401 Unauthorized: If no valid JWT token provided
         404 Not Found: If alert doesn't exist or doesn't belong to user
     """
-    alert = db.query(Alert).filter(
-        Alert.id == alert_id,
-        Alert.user_id == user.id
-    ).first()
-
-    if not alert:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Alert not found"
-        )
+    alert = get_user_alert(db, alert_id, user.id)
 
     db.delete(alert)
     db.commit()
@@ -278,25 +242,10 @@ def toggle_alert_status(
         401 Unauthorized: If no valid JWT token provided
         404 Not Found: If alert doesn't exist or doesn't belong to user
     """
-    alert = db.query(Alert).filter(
-        Alert.id == alert_id,
-        Alert.user_id == user.id
-    ).first()
+    alert = get_user_alert(db, alert_id, user.id)
 
-    if not alert:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Alert not found"
-        )
-
-    # Detect reactivation and reset baseline
-    if not alert.is_active and is_active:
-        # Transitioning from inactive to active (reactivation)
-        # Clear old history and reset last_checked_at for fresh baseline
-        from backend.models import ItemHistory
-        db.query(ItemHistory).filter(ItemHistory.alert_id == alert.id).delete()
-        alert.last_checked_at = None
-        logger.info(f"Alert {alert.id} reactivated - cleared history and resetting baseline")
+    # Handle reactivation logic
+    handle_reactivation(db, alert, is_active)
 
     alert.is_active = is_active
     db.commit()
