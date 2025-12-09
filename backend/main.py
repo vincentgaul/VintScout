@@ -20,7 +20,7 @@ import os
 
 from backend.database import engine, Base
 from backend.config import settings
-from backend.services.scheduler_service import start_scheduler, stop_scheduler
+from backend.services.scheduler import start_scheduler, stop_scheduler
 
 # Create FastAPI app
 app = FastAPI(

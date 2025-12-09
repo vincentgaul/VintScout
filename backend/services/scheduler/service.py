@@ -18,17 +18,14 @@ Key features:
 """
 
 import logging
-from datetime import datetime, timedelta
-from typing import List, Optional
-from sqlalchemy.orm import Session
-
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from backend.database import SessionLocal
-from backend.models import Alert, ItemHistory
-from backend.services.scanner_service import ScannerService
+from backend.models import Alert
 from backend.services.notification_service import get_notification_service
+from .timing import is_alert_due, get_next_check_time
+from .executor import run_alert, run_alert_now as execute_alert_now
 
 logger = logging.getLogger(__name__)
 
@@ -105,12 +102,12 @@ class SchedulerService:
 
             # Check each alert
             for alert in alerts:
-                if self._is_alert_due(alert):
+                if is_alert_due(alert):
                     logger.info(f"Alert '{alert.name}' (ID: {alert.id}) is due for checking")
-                    self._run_alert(db, alert)
+                    run_alert(db, alert, self.notifier)
                 else:
                     # Calculate when alert will be due
-                    next_check = self._get_next_check_time(alert)
+                    next_check = get_next_check_time(alert)
                     logger.debug(
                         f"Alert '{alert.name}' not due yet "
                         f"(next check at {next_check.strftime('%H:%M:%S')})"
@@ -125,74 +122,6 @@ class SchedulerService:
         finally:
             db.close()
 
-    def _is_alert_due(self, alert: Alert) -> bool:
-        """
-        Check if an alert is due for scanning.
-
-        Args:
-            alert: Alert to check
-
-        Returns:
-            True if alert should be scanned now
-        """
-        # If never checked, it's due
-        if not alert.last_checked_at:
-            return True
-
-        # Calculate when next check is due
-        next_check = alert.last_checked_at + timedelta(minutes=alert.check_interval_minutes)
-
-        # Check if we're past the next check time
-        return datetime.utcnow() >= next_check
-
-    def _get_next_check_time(self, alert: Alert) -> datetime:
-        """Get the datetime when this alert will next be checked."""
-        if not alert.last_checked_at:
-            return datetime.utcnow()
-
-        return alert.last_checked_at + timedelta(minutes=alert.check_interval_minutes)
-
-    def _run_alert(self, db: Session, alert: Alert):
-        """
-        Run scanner for a single alert.
-
-        Args:
-            db: Database session
-            alert: Alert to scan
-        """
-        try:
-            logger.info(f"Scanning alert: {alert.name}")
-
-            # Create scanner with db session
-            scanner = ScannerService(db)
-
-            # Run scanner
-            new_items = scanner.check_alert(alert)
-
-            # Update alert metadata
-            alert.last_checked_at = datetime.utcnow()
-            alert.last_found_count = len(new_items)
-
-            logger.info(
-                f"Alert '{alert.name}' scan complete - "
-                f"found {len(new_items)} new items"
-            )
-
-            # Send notifications for new items
-            if new_items:
-                try:
-                    self.notifier.notify(alert, new_items)
-                    logger.info(f"Notifications sent for {len(new_items)} new items")
-                except Exception as e:
-                    logger.error(f"Failed to send notifications: {e}", exc_info=True)
-
-        except Exception as e:
-            logger.error(
-                f"Error scanning alert '{alert.name}' (ID: {alert.id}): {e}",
-                exc_info=True
-            )
-            # Don't raise - we want to continue checking other alerts
-
     def run_alert_now(self, alert_id: str) -> dict:
         """
         Manually trigger an alert to run immediately (for testing/manual runs).
@@ -206,42 +135,12 @@ class SchedulerService:
         db = SessionLocal()
 
         try:
-            # Get alert
-            alert = db.query(Alert).filter(Alert.id == alert_id).first()
-
-            if not alert:
-                return {
-                    "success": False,
-                    "new_items": 0,
-                    "error": f"Alert {alert_id} not found"
-                }
-
-            logger.info(f"Manually running alert: {alert.name}")
-
-            # Create scanner with db session
-            scanner = ScannerService(db)
-
-            # Run scanner
-            new_items = scanner.check_alert(alert)
-
-            # Update metadata
-            alert.last_checked_at = datetime.utcnow()
-            alert.last_found_count = len(new_items)
-
+            result = execute_alert_now(alert_id, db)
             db.commit()
-
-            logger.info(f"Manual scan complete - found {len(new_items)} new items")
-
-            return {
-                "success": True,
-                "new_items": len(new_items),
-                "items": new_items
-            }
+            return result
 
         except Exception as e:
-            logger.error(f"Error in manual alert run: {e}", exc_info=True)
             db.rollback()
-
             return {
                 "success": False,
                 "new_items": 0,
