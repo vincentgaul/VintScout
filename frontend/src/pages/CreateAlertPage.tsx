@@ -65,12 +65,14 @@ export default function CreateAlertPage() {
   const [brandResults, setBrandResults] = useState<Brand[]>([]);
   const [selectedBrands, setSelectedBrands] = useState<Brand[]>([]);
   const [brandSearching, setBrandSearching] = useState(false);
+  const [useBrandIds, setUseBrandIds] = useState(false);
 
   // Category Tree state
   const [treeCategories, setTreeCategories] = useState<Category[]>([]);
   const [loadingTree, setLoadingTree] = useState(false);
   const [checkedCategories, setCheckedCategories] = useState<string[]>([]);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const [useCategoryIds, setUseCategoryIds] = useState(false);
 
   // Fetch category tree when country changes
   useEffect(() => {
@@ -287,38 +289,67 @@ export default function CreateAlertPage() {
           </div>
 
           <div className="form-group">
-            <label>Categories (Optional)</label>
+            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Categories (Optional)</span>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'normal' }}>
+                <input
+                  type="checkbox"
+                  checked={useCategoryIds}
+                  onChange={(e) => setUseCategoryIds(e.target.checked)}
+                  style={{ marginRight: '6px' }}
+                />
+                Enter IDs
+              </label>
+            </label>
 
-            {/* Category Tree */}
-            <div className="mb-4">
-              {loadingTree ? (
-                <div className="text-sm text-gray-500 p-4 border rounded bg-gray-50 text-center">
-                  Loading categories...
-                </div>
-              ) : (
-                <div className="border rounded p-2 bg-white" style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  <CheckboxTree
-                    nodes={transformCategoriesToNodes(treeCategories)}
-                    checked={checkedCategories}
-                    expanded={expandedCategories}
-                    onCheck={(checked) => setCheckedCategories(checked as string[])}
-                    onExpand={(expanded) => setExpandedCategories(expanded as string[])}
-                    icons={{
-                      check: <FaCheckSquare />,
-                      uncheck: <FaSquare />,
-                      halfCheck: <FaMinusSquare />,
-                      expandClose: <FaChevronRight />,
-                      expandOpen: <FaChevronDown />,
-                      expandAll: <FaPlusSquare />,
-                      collapseAll: <FaMinusSquare />,
-                      parentClose: <FaFolder />,
-                      parentOpen: <FaFolderOpen />,
-                      leaf: <FaFile />
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+            {useCategoryIds ? (
+              <div>
+                <input
+                  type="text"
+                  placeholder="Comma-separated category IDs (e.g., 1193,1920)"
+                  value={formData.catalog_ids || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData(prev => ({
+                      ...prev,
+                      catalog_ids: value,
+                      catalog_names: value ? `IDs: ${value}` : undefined
+                    }));
+                  }}
+                />
+                <small>Paste Vinted catalog IDs when you already know them.</small>
+              </div>
+            ) : (
+              <div className="mb-4">
+                {loadingTree ? (
+                  <div className="text-sm text-gray-500 p-4 border rounded bg-gray-50 text-center">
+                    Loading categories...
+                  </div>
+                ) : (
+                  <div className="border rounded p-2 bg-white" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                    <CheckboxTree
+                      nodes={transformCategoriesToNodes(treeCategories)}
+                      checked={checkedCategories}
+                      expanded={expandedCategories}
+                      onCheck={(checked) => setCheckedCategories(checked as string[])}
+                      onExpand={(expanded) => setExpandedCategories(expanded as string[])}
+                      icons={{
+                        check: <FaCheckSquare />,
+                        uncheck: <FaSquare />,
+                        halfCheck: <FaMinusSquare />,
+                        expandClose: <FaChevronRight />,
+                        expandOpen: <FaChevronDown />,
+                        expandAll: <FaPlusSquare />,
+                        collapseAll: <FaMinusSquare />,
+                        parentClose: <FaFolder />,
+                        parentOpen: <FaFolderOpen />,
+                        leaf: <FaFile />
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="form-group">
@@ -343,82 +374,111 @@ export default function CreateAlertPage() {
             />
           </div>
 
-          <div className="form-group">
-            <label>Brands (Optional)</label>
+          <div className="form-group" style={{ position: 'relative' }}>
+            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Brands (Optional)</span>
+              <label style={{ fontSize: '0.85rem', fontWeight: 'normal' }}>
+                <input
+                  type="checkbox"
+                  checked={useBrandIds}
+                  onChange={(e) => setUseBrandIds(e.target.checked)}
+                  style={{ marginRight: '6px' }}
+                />
+                Enter IDs
+              </label>
+            </label>
 
-            {/* Selected brands */}
-            {selectedBrands.length > 0 && (
-              <div style={{ marginBottom: '10px' }}>
-                {selectedBrands.map(brand => (
-                  <span
-                    key={brand.id}
-                    style={{
-                      display: 'inline-block',
-                      background: '#e0e0e0',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      marginRight: '8px',
-                      marginBottom: '8px'
-                    }}
-                  >
-                    {brand.name} (ID: {brand.vinted_id})
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveBrand(brand.id)}
-                      style={{
-                        marginLeft: '8px',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        color: '#666'
-                      }}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
+            {useBrandIds ? (
+              <div>
+                <input
+                  type="text"
+                  placeholder="Comma-separated brand IDs (e.g., 53,14)"
+                  value={formData.brand_ids || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setFormData(prev => ({
+                      ...prev,
+                      brand_ids: value,
+                      brand_names: value ? `IDs: ${value}` : undefined
+                    }));
+                  }}
+                />
+                <small>Enter numeric brand IDs directly.</small>
               </div>
-            )}
-
-            {/* Brand search input */}
-            <input
-              type="text"
-              value={brandQuery}
-              onChange={(e) => handleBrandSearch(e.target.value)}
-              placeholder="Search brands (e.g., nike, zara, adidas)"
-            />
-
-            {/* Brand search results */}
-            {brandSearching && <div>Searching...</div>}
-            {brandResults.length > 0 && (
-              <div style={{
-                position: 'absolute',
-                background: 'white',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                marginTop: '4px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                zIndex: 1000,
-                width: 'calc(100% - 40px)'
-              }}>
-                {brandResults.map(brand => (
-                  <div
-                    key={brand.id}
-                    onClick={() => handleSelectBrand(brand)}
-                    style={{
-                      padding: '8px 12px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #eee'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-                  >
-                    <strong>{brand.name} (ID: {brand.vinted_id})</strong>
+            ) : (
+              <>
+                {selectedBrands.length > 0 && (
+                  <div style={{ marginBottom: '10px' }}>
+                    {selectedBrands.map(brand => (
+                      <span
+                        key={brand.id}
+                        style={{
+                          display: 'inline-block',
+                          background: '#e0e0e0',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          marginRight: '8px',
+                          marginBottom: '8px'
+                        }}
+                      >
+                        {brand.name} (ID: {brand.vinted_id})
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBrand(brand.id)}
+                          style={{
+                            marginLeft: '8px',
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            color: '#666'
+                          }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )}
+
+                <input
+                  type="text"
+                  value={brandQuery}
+                  onChange={(e) => handleBrandSearch(e.target.value)}
+                  placeholder="Search brands (e.g., nike, zara, adidas)"
+                />
+
+                {brandSearching && <div>Searching...</div>}
+                {brandResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    background: 'white',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    marginTop: '4px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    zIndex: 1000,
+                    width: 'calc(100% - 40px)'
+                  }}>
+                    {brandResults.map(brand => (
+                      <div
+                        key={brand.id}
+                        onClick={() => handleSelectBrand(brand)}
+                        style={{
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          borderBottom: '1px solid #eee'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#f5f5f5'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
+                        <strong>{brand.name} (ID: {brand.vinted_id})</strong>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
 
