@@ -2,9 +2,10 @@
 HTTP session management for Vinted API.
 
 Handles cookie acquisition, headers, and low-level HTTP requests.
+Uses CloudScraper to bypass Cloudflare protection.
 """
 
-import httpx
+import cloudscraper
 import time
 import logging
 import random
@@ -41,7 +42,9 @@ class VintedSession:
 
     def __init__(self, country_code: str, base_url: str, skip_init: bool = False):
         """
-        Initialize HTTP session for Vinted API.
+        Initialize HTTP session for Vinted API with CloudScraper.
+
+        CloudScraper automatically handles Cloudflare challenges.
 
         Args:
             country_code: 2-letter country code (e.g., "fr", "de")
@@ -51,11 +54,21 @@ class VintedSession:
         """
         self.country_code = country_code
         self.base_url = base_url
-        self.session = httpx.Client(
-            timeout=settings.VINTED_API_TIMEOUT,
-            headers=self._get_headers(),
-            follow_redirects=True
+
+        # Create CloudScraper session that can bypass Cloudflare
+        self.session = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'darwin',
+                'mobile': False
+            }
         )
+
+        # Set timeout
+        self.session.timeout = settings.VINTED_API_TIMEOUT
+
+        # Set headers
+        self.session.headers.update(self._get_headers())
 
         # Initialize session with cookies (can be skipped if causing 403s)
         if not skip_init:
@@ -127,6 +140,8 @@ class VintedSession:
         """
         Make HTTP request to Vinted API with retry logic.
 
+        CloudScraper will automatically solve Cloudflare challenges.
+
         Args:
             method: HTTP method (GET, POST, etc.)
             endpoint: API endpoint path (e.g., "/api/v2/catalog/brands")
@@ -140,6 +155,8 @@ class VintedSession:
             VintedAPIError: If API returns error
             VintedRateLimitError: If rate limited
         """
+        import requests
+
         url = f"{self.base_url}{endpoint}"
 
         for attempt in range(retries):
@@ -163,8 +180,8 @@ class VintedSession:
 
                 # Handle errors
                 if response.status_code >= 400:
-                    logger.error(f"Vinted API error: {response.status_code} {response.text}")
-                    raise VintedAPIError(f"HTTP {response.status_code}: {response.text}")
+                    logger.error(f"Vinted API error: {response.status_code} {response.text[:200]}")
+                    raise VintedAPIError(f"HTTP {response.status_code}: {response.text[:200]}")
 
                 # Parse JSON
                 data = response.json()
@@ -172,14 +189,14 @@ class VintedSession:
 
                 return data
 
-            except httpx.TimeoutException:
+            except requests.exceptions.Timeout:
                 logger.warning(f"Request timeout (attempt {attempt + 1}/{retries})")
                 if attempt < retries - 1:
                     time.sleep(2 ** attempt)  # Exponential backoff
                     continue
                 raise VintedAPIError("Request timed out")
 
-            except httpx.HTTPError as e:
+            except requests.exceptions.RequestException as e:
                 logger.error(f"HTTP error: {e}")
                 if attempt < retries - 1:
                     time.sleep(2 ** attempt)
