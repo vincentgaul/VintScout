@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     MAX_BRAND_SEARCH_RESULTS: int = 50
     CATEGORY_CACHE_REFRESH_DAYS: int = 7
 
+    # Vinted API Session
+    VINTED_SKIP_SESSION_INIT: bool = False  # Set to True if getting 403 errors
+
     # Scanner Settings
     MIN_CHECK_INTERVAL_MINUTES: int = 5
     MAX_CHECK_INTERVAL_MINUTES: int = 1440  # 24 hours

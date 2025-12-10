@@ -7,6 +7,7 @@ Handles cookie acquisition, headers, and low-level HTTP requests.
 import httpx
 import time
 import logging
+import random
 from typing import Dict, Optional, Any
 
 from ...config import settings
@@ -14,6 +15,17 @@ from .types import VintedAPIError, VintedRateLimitError
 
 
 logger = logging.getLogger(__name__)
+
+
+# Rotate user agents to avoid fingerprinting
+USER_AGENTS = [
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:120.0) Gecko/20100101 Firefox/120.0",
+]
 
 
 class VintedSession:
@@ -27,13 +39,15 @@ class VintedSession:
     - Retry logic and rate limiting
     """
 
-    def __init__(self, country_code: str, base_url: str):
+    def __init__(self, country_code: str, base_url: str, skip_init: bool = False):
         """
         Initialize HTTP session for Vinted API.
 
         Args:
             country_code: 2-letter country code (e.g., "fr", "de")
             base_url: Vinted domain URL (e.g., "https://www.vinted.fr")
+            skip_init: Skip homepage cookie initialization (default: False)
+                      Set to True if getting 403 errors during session init
         """
         self.country_code = country_code
         self.base_url = base_url
@@ -43,17 +57,21 @@ class VintedSession:
             follow_redirects=True
         )
 
-        # Initialize session with cookies (required by Vinted)
-        self._initialize_session()
+        # Initialize session with cookies (can be skipped if causing 403s)
+        if not skip_init:
+            self._initialize_session()
+        else:
+            logger.info(f"Skipping session initialization for {self.base_url} (trying API directly)")
 
     def _get_headers(self) -> Dict[str, str]:
         """
         Get HTTP headers that mimic a real browser.
 
         Vinted may block requests without proper headers.
+        Uses rotating user agents to avoid fingerprinting.
         """
         return {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "User-Agent": random.choice(USER_AGENTS),
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9,fr;q=0.8",
             "Accept-Encoding": "gzip, deflate, br",
@@ -72,6 +90,9 @@ class VintedSession:
 
         Vinted requires a valid session with cookies before API calls work.
         This mimics the original VintedScanner behavior.
+
+        If this fails with 403, consider setting VINTED_SKIP_SESSION_INIT=true
+        in your .env file.
         """
         try:
             logger.debug(f"Initializing session with {self.base_url}")
@@ -81,6 +102,14 @@ class VintedSession:
 
             if response.status_code == 200:
                 logger.debug(f"Session initialized, cookies: {len(self.session.cookies)}")
+            elif response.status_code == 403:
+                logger.warning(
+                    f"Session init returned 403 (bot detection). "
+                    f"Set VINTED_SKIP_SESSION_INIT=true in .env to skip this step."
+                )
+                # Check if HTML response (CAPTCHA page)
+                if "html" in response.text.lower()[:100]:
+                    logger.error("Vinted returned HTML/CAPTCHA page instead of allowing session")
             else:
                 logger.warning(f"Session init returned {response.status_code}")
 

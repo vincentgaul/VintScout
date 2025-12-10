@@ -27,6 +27,7 @@ This module now delegates to specialized submodules:
 
 from typing import Dict, List, Optional, Any
 
+from backend.config import settings
 from .vinted import DOMAINS, VintedAPIError, VintedRateLimitError, VintedSession
 from .vinted import search as vinted_search
 
@@ -61,7 +62,11 @@ class VintedClient:
             raise ValueError(f"Unsupported country code: {country_code}")
 
         self.base_url = DOMAINS[self.country_code]
-        self._session = VintedSession(self.country_code, self.base_url)
+        self._session = VintedSession(
+            self.country_code,
+            self.base_url,
+            skip_init=settings.VINTED_SKIP_SESSION_INIT
+        )
 
     def search_brands(self, query: str, limit: int = 20) -> List[Dict[str, Any]]:
         """
