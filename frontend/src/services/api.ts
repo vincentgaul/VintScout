@@ -40,6 +40,9 @@ export const updateAlert = (id: string, data: Partial<AlertCreate>) =>
 export const deleteAlert = (id: string) =>
   api.delete(`/alerts/${id}`);
 
+export const runAlertNow = (id: string) =>
+  api.post<{ success: boolean; new_items: number; items?: any[]; error?: string }>(`/alerts/${id}/run`).then(res => res.data);
+
 // History
 export const getHistory = (alertId: string, limit = 20, offset = 0) =>
   api.get<ItemHistory[]>('/history', { params: { alert_id: alertId, limit, offset } }).then(res => res.data);

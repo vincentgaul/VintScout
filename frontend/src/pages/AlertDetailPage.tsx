@@ -12,6 +12,8 @@ export default function AlertDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [page, setPage] = useState(1);
+  const [runningNow, setRunningNow] = useState(false);
+  const [runMessage, setRunMessage] = useState('');
   const itemsPerPage = 20;
 
   useEffect(() => {
@@ -37,6 +39,31 @@ export default function AlertDetailPage() {
     }
   };
 
+  const handleRunNow = async () => {
+    if (!id) return;
+
+    setRunningNow(true);
+    setRunMessage('');
+
+    try {
+      const result = await api.runAlertNow(id);
+
+      if (result.success) {
+        setRunMessage(`✓ Found ${result.new_items} new item${result.new_items !== 1 ? 's' : ''}!`);
+        // Reload data to show new items
+        await loadData();
+      } else {
+        setRunMessage(`✗ Error: ${result.error || 'Failed to run alert'}`);
+      }
+    } catch (err: any) {
+      setRunMessage(`✗ Error: ${err.response?.data?.detail || 'Failed to run alert'}`);
+    } finally {
+      setRunningNow(false);
+      // Clear message after 5 seconds
+      setTimeout(() => setRunMessage(''), 5000);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
   if (error) return <div className="text-red-600 text-sm">{error}</div>;
   if (!alert) return <div>Alert not found</div>;
@@ -46,6 +73,29 @@ export default function AlertDetailPage() {
       <Link to="/alerts" className="text-blue-600">← Back to Alerts</Link>
 
       <AlertCard alert={alert} itemsCount={alert.total_found_count} />
+
+      {/* Manual Run Button */}
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleRunNow}
+            disabled={runningNow}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {runningNow ? 'Running...' : 'Check Now'}
+          </button>
+          {runMessage && (
+            <span className={`text-sm ${runMessage.startsWith('✓') ? 'text-green-600' : 'text-red-600'}`}>
+              {runMessage}
+            </span>
+          )}
+          {!runMessage && !runningNow && (
+            <span className="text-sm text-gray-500">
+              Manually trigger this alert to check for new items
+            </span>
+          )}
+        </div>
+      </div>
 
       <h2>Found Items</h2>
 

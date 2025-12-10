@@ -204,7 +204,7 @@ export default function CreateAlertPage() {
 
           {/* Check Interval */}
           <div className="space-y-2">
-            <label>Check Interval (minutes) *</label>
+            <label>Check Interval *</label>
             <select
               value={formData.check_interval_minutes}
               onChange={(e) => handleChange('check_interval_minutes', parseInt(e.target.value))}
@@ -216,6 +216,9 @@ export default function CreateAlertPage() {
               <option value={15}>15 minutes</option>
               <option value={30}>30 minutes</option>
               <option value={60}>1 hour</option>
+              <option value={360}>6 hours</option>
+              <option value={720}>12 hours</option>
+              <option value={1440}>24 hours</option>
             </select>
           </div>
 

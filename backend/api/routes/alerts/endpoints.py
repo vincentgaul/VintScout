@@ -11,6 +11,7 @@ Endpoints:
 - PUT /api/alerts/{alert_id} - Update alert
 - DELETE /api/alerts/{alert_id} - Delete alert
 - POST /api/alerts/{alert_id}/activate - Activate/deactivate alert
+- POST /api/alerts/{alert_id}/run - Manually trigger alert check
 
 All endpoints require authentication (JWT token).
 Users can only access/modify their own alerts.
@@ -18,11 +19,12 @@ Users can only access/modify their own alerts.
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Dict, Any
 
 from backend.api.dependencies import get_db, get_current_user
 from backend.schemas import AlertCreate, AlertUpdate, AlertResponse
 from backend.models import User, Alert
+from backend.services.scheduler import get_scheduler
 from .helpers import get_user_alert, handle_reactivation
 
 
@@ -252,3 +254,40 @@ def toggle_alert_status(
     db.refresh(alert)
 
     return AlertResponse.model_validate(alert)
+
+
+@router.post("/{alert_id}/run")
+def run_alert_now(
+    alert_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+) -> Dict[str, Any]:
+    """
+    Manually trigger an alert to run immediately.
+
+    Useful for testing alerts or getting immediate results without waiting
+    for the scheduled check.
+
+    Path parameters:
+        - alert_id: Alert UUID
+
+    Response:
+        {
+            "success": true/false,
+            "new_items": number of new items found,
+            "items": array of items (if successful),
+            "error": error message (if failed)
+        }
+
+    Raises:
+        401 Unauthorized: If no valid JWT token provided
+        404 Not Found: If alert doesn't exist or doesn't belong to user
+    """
+    # Verify ownership
+    alert = get_user_alert(db, alert_id, user.id)
+
+    # Run the alert via scheduler service
+    scheduler = get_scheduler()
+    result = scheduler.run_alert_now(alert_id)
+
+    return result
