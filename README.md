@@ -6,14 +6,14 @@ Vinted does not support notifications. This is a self-hosted web application for
 
 ## Features
 
-- **Smart Search**: Autocomplete brand search and visual category tree navigation
+- **Smart Search**: Autocomplete brand search, visual category tree navigation, and condition filters
 - **Multi-Country Support**: Monitor Vinted marketplaces across 20+ European countries
 - **Telegram Notifications**: Instant alerts when new items match your criteria
-- **Self-Hosted**: Complete control of your data 
+- **Self-Hosted**: Complete control of your data
 - **Docker Ready**: One-command deployment with Docker Compose
 
 ## TODO
-- **Improved Search**: Add filter by size, color, condition, etc.
+- **Improved Search**: Add filter by size and color
 - **Email Notifications**: Alternative to Telegram alerts
 - **Improved UI**: More user-friendly interface and mobile responsiveness
 - **Cloud Deployment**: Managed hosting option with PostgreSQL backend
@@ -131,6 +131,7 @@ cp .env.example .env
 - `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`: Telegram notifications (optional)
 - `JWT_SECRET`: Generate with `openssl rand -hex 32` (recommended for production)
 - `DATABASE_URL`: Defaults to SQLite, can use PostgreSQL for cloud deployments
+- `VINTED_SKIP_SESSION_INIT`: Set to `true` if experiencing 403 bot detection errors (default: `false`)
 
 See `.env.example` for all available options.
 
