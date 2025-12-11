@@ -108,13 +108,19 @@ class VintedSession:
         in your .env file.
         """
         try:
-            logger.debug(f"Initializing session with {self.base_url}")
+            logger.info(f"Initializing session with {self.base_url}...")  # Changed to INFO
 
             # Make initial request to homepage to get cookies
             response = self.session.get(self.base_url)
 
+            cookie_count = len(self.session.cookies)
+            logger.info(f"Session init: status={response.status_code}, cookies={cookie_count}")
+
             if response.status_code == 200:
-                logger.debug(f"Session initialized, cookies: {len(self.session.cookies)}")
+                if cookie_count == 0:
+                    logger.warning(f"Session init returned 200 but got 0 cookies! Response length: {len(response.content)}")
+                else:
+                    logger.info(f"Session initialized successfully with {cookie_count} cookies")
             elif response.status_code == 403:
                 logger.warning(
                     f"Session init returned 403 (bot detection). "
@@ -181,22 +187,65 @@ class VintedSession:
 
                 # Handle errors
                 if response.status_code >= 400:
-                    # Try to get readable error message
+                    # Get error message, handling garbled/binary responses
+                    content_type = response.headers.get('content-type', '').lower()
+
+                    # Check if response looks like text/json
+                    if 'json' in content_type or 'text' in content_type:
+                        try:
+                            error_text = response.text[:200]
+                            # Verify it's actually readable (not garbled compressed data)
+                            if any(ord(c) < 32 and c not in '\n\r\t' for c in error_text[:50]):
+                                error_text = f"[Binary/compressed response, {len(response.content)} bytes]"
+                        except (UnicodeDecodeError, AttributeError):
+                            error_text = f"[Unreadable response, {len(response.content)} bytes]"
+                    else:
+                        error_text = f"[Binary response ({content_type}), {len(response.content)} bytes]"
+
+                    # Include diagnostic info in error message
+                    content_encoding = response.headers.get('content-encoding', 'none')
+                    cookie_count = len(self.session.cookies)
+
+                    logger.error(
+                        f"Vinted API error: {response.status_code} {error_text}\n"
+                        f"  Content-Encoding: {content_encoding}\n"
+                        f"  Cookies: {cookie_count}\n"
+                        f"  Content-Type: {content_type}"
+                    )
+                    raise VintedAPIError(
+                        f"HTTP {response.status_code}: {error_text} "
+                        f"(encoding={content_encoding}, cookies={cookie_count})"
+                    )
+
+                # Parse JSON - response.json() should handle decompression automatically
+                try:
+                    # requests automatically decompresses based on Content-Encoding header
+                    # response.json() internally calls response.content which triggers decompression
+                    data = response.json()
+                    logger.debug(f"Response: {response.status_code} (keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'})")
+                    return data
+                except ValueError as e:
+                    # JSON parsing failed - check if response is actually decompressed
+                    import json
+                    content_encoding = response.headers.get('content-encoding', 'none')
+
+                    # Try to get readable text for logging
                     try:
-                        error_text = response.text[:200]
-                    except (UnicodeDecodeError, AttributeError):
-                        # If response is garbled/compressed, use content length instead
-                        error_text = f"[Binary response, {len(response.content)} bytes]"
+                        # Force decompression by accessing response.content first
+                        body_bytes = response.content
+                        body_text = body_bytes.decode('utf-8')[:200]
+                    except Exception:
+                        body_text = f"[{len(response.content)} bytes, encoding={content_encoding}]"
 
-                    logger.error(f"Vinted API error: {response.status_code} {error_text}")
-                    logger.debug(f"Response headers: {dict(response.headers)}")
-                    raise VintedAPIError(f"HTTP {response.status_code}: {error_text}")
-
-                # Parse JSON
-                data = response.json()
-                logger.debug(f"Response: {response.status_code} (keys: {list(data.keys()) if isinstance(data, dict) else 'not a dict'})")
-
-                return data
+                    logger.error(
+                        f"Failed to parse JSON response:\n"
+                        f"  Status: {response.status_code}\n"
+                        f"  Content-Type: {response.headers.get('content-type', 'unknown')}\n"
+                        f"  Content-Encoding: {content_encoding}\n"
+                        f"  Content-Length: {len(response.content)}\n"
+                        f"  Body preview: {body_text}"
+                    )
+                    raise VintedAPIError(f"Invalid JSON response: {e}")
 
             except requests.exceptions.Timeout:
                 logger.warning(f"Request timeout (attempt {attempt + 1}/{retries})")

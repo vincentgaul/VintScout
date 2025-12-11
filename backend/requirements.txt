@@ -24,6 +24,7 @@ email-validator==2.1.0
 httpx==0.25.1
 requests==2.31.0
 cloudscraper==1.2.71  # Cloudflare bypass
+brotli==1.1.0  # Decompress brotli responses
 
 # Background Jobs
 APScheduler==3.10.4
