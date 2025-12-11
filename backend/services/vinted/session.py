@@ -162,6 +162,7 @@ class VintedSession:
         for attempt in range(retries):
             try:
                 logger.debug(f"Request: {method} {url} params={params}")
+                logger.debug(f"Cookies: {len(self.session.cookies)} cookies set")
 
                 response = self.session.request(
                     method=method,
@@ -180,8 +181,16 @@ class VintedSession:
 
                 # Handle errors
                 if response.status_code >= 400:
-                    logger.error(f"Vinted API error: {response.status_code} {response.text[:200]}")
-                    raise VintedAPIError(f"HTTP {response.status_code}: {response.text[:200]}")
+                    # Try to get readable error message
+                    try:
+                        error_text = response.text[:200]
+                    except (UnicodeDecodeError, AttributeError):
+                        # If response is garbled/compressed, use content length instead
+                        error_text = f"[Binary response, {len(response.content)} bytes]"
+
+                    logger.error(f"Vinted API error: {response.status_code} {error_text}")
+                    logger.debug(f"Response headers: {dict(response.headers)}")
+                    raise VintedAPIError(f"HTTP {response.status_code}: {error_text}")
 
                 # Parse JSON
                 data = response.json()
