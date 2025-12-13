@@ -11,3 +11,14 @@
     @apply font-sans text-gray-900 bg-gray-50 leading-relaxed;
   }
 }
+
+@layer components {
+  /* Item thumbnail styling - responsive sizes */
+  .item-thumbnail {
+    @apply w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 object-cover rounded flex-shrink-0;
+  }
+
+  .item-thumbnail-placeholder {
+    @apply w-20 h-20 md:w-32 md:h-32 lg:w-40 lg:h-40 bg-gray-200 rounded flex-shrink-0 flex items-center justify-center text-gray-500 text-xs md:text-sm;
+  }
+}
